@@ -45,17 +45,18 @@ subprojects {
 	spotless {
 		java {
 			googleJavaFormat().aosp()
-			importOrder('java', 'javax', 'jakarta', 'org', 'lombok', 'core')
+			importOrder('java', 'javax', 'jakarta', 'org', 'lombok', 'com')
 			removeUnusedImports()
 			trimTrailingWhitespace()
 			endWithNewline()
 		}
 	}
+}
 
-	tasks.register("addGitPreCommitHook", Copy) {
-		from 'script/pre-commit'
-		into '.git/hooks'
-	}
+
+tasks.register("addGitPreCommitHook", Copy) {
+	from 'script/pre-commit'
+	into '.git/hooks'
 }
 
 bootJar {
