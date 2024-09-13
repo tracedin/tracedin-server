@@ -1,6 +1,8 @@
-bootJar { enabled = false }
+bootJar {
+    enabled = false
+}
 
 dependencies {
-    //spring-context
+
     implementation 'org.springframework:spring-context'
 }

@@ -12,7 +12,7 @@ allprojects {
 }
 
 subprojects {
-	group = 'com.univ'
+	group = 'com.univ.tracedin'
 	version = '0.0.1'
 	sourceCompatibility = '17'
 
