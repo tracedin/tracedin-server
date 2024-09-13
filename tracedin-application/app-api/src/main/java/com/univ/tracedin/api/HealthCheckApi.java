@@ -11,4 +11,5 @@ public class HealthCheckApi {
     public String healthCheck() {
         return "health check success";
     }
+
 }
