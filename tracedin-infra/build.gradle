@@ -3,6 +3,13 @@ bootJar {
 }
 
 dependencies {
+
+    implementation(project(':tracedin-common'))
+    implementation(project(':tracedin-domain'))
+
+    //elastic search
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'co.elastic.clients:elasticsearch-java:8.9.0'
+
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }

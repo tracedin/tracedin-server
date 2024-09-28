@@ -1,1 +1,14 @@
-spring.application.name=tracedin
+spring:
+  profiles:
+    group:
+      local: common, domain, infra
+      prod: common, domain, infra
+
+springdoc:
+  swagger-ui:
+    persist-authorization: true
+    default-models-expand-depth: -1
+server:
+  shutdown: graceful
+  port: 8989
+

@@ -1,4 +1,4 @@
-package com.univ.tracedin.api;
+package com.univ.tracedin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

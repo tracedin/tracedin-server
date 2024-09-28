@@ -1,0 +1,49 @@
+{
+  "properties": {
+    "spanId": {
+      "type": "keyword"
+    },
+    "serviceName": {
+      "type": "keyword"
+    },
+    "traceId": {
+      "type": "keyword"
+    },
+    "parentSpanId": {
+      "type": "keyword",
+      "null_value": "null"
+    },
+    "name": {
+      "type": "text",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
+    },
+    "kind": {
+      "type": "keyword"
+    },
+    "startEpochNanos": {
+      "type": "long"
+    },
+    "endEpochNanos": {
+      "type": "long"
+    },
+    "attributes": {
+      "type": "nested",
+      "properties": {
+        "data": {
+          "type": "object",
+          "enabled": true
+        },
+        "capacity": {
+          "type": "integer"
+        },
+        "totalAddedValues": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
