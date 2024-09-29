@@ -11,3 +11,25 @@ springdoc:
 server:
   shutdown: graceful
 
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  refresh-token:
+    header: Refresh-token
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+jwt:
+  access-token:
+    expiration: 25920000
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+jwt:
+  access-token:
+    expiration: 25920000
