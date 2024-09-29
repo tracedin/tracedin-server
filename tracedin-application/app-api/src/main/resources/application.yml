@@ -10,5 +10,4 @@ springdoc:
     default-models-expand-depth: -1
 server:
   shutdown: graceful
-  port: 8989
 

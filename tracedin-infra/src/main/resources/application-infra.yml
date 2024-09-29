@@ -7,7 +7,7 @@ spring:
 elasticsearch:
   client:
     host: ${ELASTIC_HOST}
-  host: ${ELASTICSEARCH_HOST:localhost:9200}
+  host-and-port: ${ELASTICSEARCH_HOST:localhost:9200}
   port: 9200
 
 ---
@@ -19,5 +19,5 @@ spring:
 elasticsearch:
   client:
     host: ${ELASTIC_HOST}
-  host: ${ELASTICSEARCH_HOST:es:9200}
+  host-and-port: ${ELASTICSEARCH_HOST:es:9200}
   port: 9200

@@ -10,11 +10,11 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 @EnableElasticsearchRepositories(basePackages = "com.univ.tracedin")
 public class ElasticSearchConfig extends ElasticsearchConfiguration {
 
-    @Value("${elasticsearch.host}")
-    private String host;
+    @Value("${elasticsearch.host-and-port}")
+    private String hostAndPort;
 
     @Override
     public ClientConfiguration clientConfiguration() {
-        return ClientConfiguration.builder().connectedTo(host).build();
+        return ClientConfiguration.builder().connectedTo(hostAndPort).build();
     }
 }
