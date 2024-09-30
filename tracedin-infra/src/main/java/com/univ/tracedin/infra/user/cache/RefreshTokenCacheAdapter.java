@@ -26,12 +26,12 @@ public class RefreshTokenCacheAdapter implements RefreshTokenCache {
 
     @Override
     public RefreshToken get(UserId id) {
-        String key = getKey(id.getValue());
+        String key = getKey(id);
         log.info("Get Refresh Token from {}", key);
-        return template.opsForValue().get(getKey(id.getValue()));
+        return template.opsForValue().get(key);
     }
 
-    private String getKey(long userId) {
-        return "USER_REFRESH_TOKEN:" + userId;
+    private String getKey(UserId userId) {
+        return "USER_REFRESH_TOKEN:" + userId.getValue();
     }
 }

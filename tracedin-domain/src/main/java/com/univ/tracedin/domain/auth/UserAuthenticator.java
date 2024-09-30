@@ -4,8 +4,9 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.auth.exception.AuthenticationException;
+import com.univ.tracedin.domain.auth.exception.PasswordValidationException;
 import com.univ.tracedin.domain.user.User;
+import com.univ.tracedin.domain.user.UserReader;
 
 @Component
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class UserAuthenticator {
 
     private void validatePassword(LoginInfo login, User user) {
         if (passwordEncoder.matches(login.password(), user.getPassword())) {
-            throw AuthenticationException.EXCEPTION;
+            throw PasswordValidationException.EXCEPTION;
         }
     }
 }

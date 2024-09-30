@@ -1,12 +1,8 @@
-package com.univ.tracedin.domain.auth;
+package com.univ.tracedin.domain.user;
 
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
-
-import com.univ.tracedin.domain.user.User;
-import com.univ.tracedin.domain.user.UserId;
-import com.univ.tracedin.domain.user.UserRepository;
 
 @Component
 @RequiredArgsConstructor

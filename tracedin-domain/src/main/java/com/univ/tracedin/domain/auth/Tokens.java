@@ -9,6 +9,6 @@ public record Tokens(String accessToken, String refreshToken) {
     }
 
     public RefreshToken getRefreshToken(User user) {
-        return new RefreshToken(user.getId().getValue(), refreshToken);
+        return new RefreshToken(user.getId(), refreshToken);
     }
 }

@@ -18,6 +18,7 @@ import com.univ.tracedin.api.auth.exception.InvalidTokenException;
 import com.univ.tracedin.domain.auth.TokenGenerator;
 import com.univ.tracedin.domain.auth.Tokens;
 import com.univ.tracedin.domain.auth.UserPrincipal;
+import com.univ.tracedin.domain.user.UserId;
 import com.univ.tracedin.domain.user.UserRole;
 
 import io.jsonwebtoken.Claims;
@@ -80,19 +81,19 @@ public class JwtTokenizer implements TokenGenerator {
                 .map(refreshToken -> refreshToken.replace(BEARER, ""));
     }
 
-    public static UserPrincipal extractPrincipal(String accessToken) {
+    public static UserPrincipal extractPrincipal(String token) {
         try {
             // JWT 파싱 및 유효성 검사
             Claims claims =
                     Jwts.parserBuilder()
                             .setSigningKey(getKeyFromSecretKey(SECRET_KEY))
                             .build()
-                            .parseClaimsJws(accessToken)
+                            .parseClaimsJws(token)
                             .getBody();
 
             long userId = Long.parseLong(claims.getSubject());
             UserRole role = UserRole.valueOf(claims.get("role", String.class));
-            return UserPrincipal.of(userId, role);
+            return UserPrincipal.of(UserId.from(userId), role);
 
         } catch (ExpiredJwtException e) {
             throw ExpiredTokenException.EXCEPTION;

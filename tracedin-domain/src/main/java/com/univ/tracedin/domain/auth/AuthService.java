@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+import com.univ.tracedin.domain.user.UserAppender;
 import com.univ.tracedin.domain.user.UserProfile;
 
 @Service

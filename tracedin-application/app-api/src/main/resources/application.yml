@@ -14,7 +14,7 @@ server:
 jwt:
   secret-key: ${JWT_SECRET_KEY}
   refresh-token:
-    header: Refresh-token
+    header: Refresh-value
 
 ---
 spring:

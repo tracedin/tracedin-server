@@ -32,6 +32,6 @@ public class User {
     }
 
     public UserPrincipal getPrincipal() {
-        return UserPrincipal.of(id.getValue(), role);
+        return UserPrincipal.of(id, role);
     }
 }
