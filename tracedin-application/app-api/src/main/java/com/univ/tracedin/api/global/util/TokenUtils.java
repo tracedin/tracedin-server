@@ -1,5 +1,7 @@
 package com.univ.tracedin.api.global.util;
 
+import static com.univ.tracedin.domain.auth.AuthConstants.*;
+
 import java.time.Duration;
 
 import org.springframework.http.HttpHeaders;
@@ -13,9 +15,7 @@ public class TokenUtils {
         HttpHeaders headers = new HttpHeaders();
         ResponseCookie cookie =
                 createHttpOnlyCookie(
-                        AuthConstants.REFRESH_TOKEN_COOKIE_NAME,
-                        tokens.refreshToken(),
-                        AuthConstants.REFRESH_TOKEN_TTL);
+                        REFRESH_TOKEN_COOKIE_NAME, tokens.refreshToken(), REFRESH_TOKEN_TTL);
         headers.set(HttpHeaders.AUTHORIZATION, tokens.accessToken());
         headers.set(HttpHeaders.SET_COOKIE, cookie.toString());
         return headers;

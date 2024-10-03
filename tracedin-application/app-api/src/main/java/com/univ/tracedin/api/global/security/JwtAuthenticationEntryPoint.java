@@ -9,8 +9,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import com.univ.tracedin.domain.auth.exception.PasswordValidationException;
-
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
@@ -31,7 +29,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                     request, response, null, (Exception) request.getAttribute("exception"));
             return;
         }
-        resolver.resolveException(request, response, null, PasswordValidationException.EXCEPTION);
+        resolver.resolveException(
+                request,
+                response,
+                null,
+                com.univ.tracedin.api.auth.exception.AuthenticationException.EXCEPTION);
     }
 
     private boolean isExceptionInSecurityFilter(HttpServletRequest request) {

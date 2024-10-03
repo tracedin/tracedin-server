@@ -16,8 +16,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.univ.tracedin.domain.span.Span;
+import com.univ.tracedin.domain.span.SpanAttributes;
+import com.univ.tracedin.domain.span.SpanIds;
+import com.univ.tracedin.domain.span.SpanKind;
+import com.univ.tracedin.domain.span.SpanTiming;
+import com.univ.tracedin.domain.span.SpanType;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Document(indexName = "span")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,58 +34,62 @@ import com.univ.tracedin.domain.span.Span;
 @Setting(settingPath = "elastic/span-settings.json")
 public class SpanDocument implements Serializable {
 
-    @Id
-    @Field(type = FieldType.Keyword)
-    private String spanId;
+    @Id private String spanId;
 
-    @Field(type = FieldType.Keyword)
     private String serviceName;
 
-    @Field(type = FieldType.Keyword)
+    private String projectKey;
+
     private String traceId;
 
-    @Field(type = FieldType.Keyword)
     private String parentSpanId;
 
-    @Field(type = FieldType.Text)
+    private SpanType spanType;
+
     private String name;
 
-    @Field(type = FieldType.Keyword)
-    private String kind;
+    private SpanKind kind;
 
-    @Field(type = FieldType.Long)
-    private Long startEpochNanos;
+    private Long startEpochMillis;
 
-    @Field(type = FieldType.Long)
-    private Long endEpochNanos;
+    private Long endEpochMillis;
 
-    @Field(type = FieldType.Nested)
     private Attributes attributes;
 
     public static SpanDocument from(Span span) {
         return SpanDocument.builder()
-                .spanId(span.getSpanId())
+                .spanId(span.getSpanIds().spanId())
                 .serviceName(span.getServiceName())
-                .traceId(span.getTraceId())
-                .parentSpanId(span.getParentSpanId())
+                .projectKey(span.getProjectKey())
+                .traceId(span.getSpanIds().traceId())
+                .parentSpanId(span.getSpanIds().parentSpanId())
+                .spanType(span.getSpanType())
                 .name(span.getName())
                 .kind(span.getKind())
-                .startEpochNanos(span.getStartEpochNanos())
-                .endEpochNanos(span.getEndEpochNanos())
+                .startEpochMillis(span.getTiming().startEpochMillis())
+                .endEpochMillis(span.getTiming().endEpochMillis())
                 .attributes(Attributes.from(span.getAttributes()))
                 .build();
     }
 
     public Span toSpan() {
         return Span.builder()
-                .spanId(spanId)
                 .serviceName(serviceName)
-                .traceId(traceId)
-                .parentSpanId(parentSpanId)
+                .projectKey(projectKey)
+                .spanIds(
+                        SpanIds.builder()
+                                .spanId(spanId)
+                                .traceId(traceId)
+                                .parentSpanId(parentSpanId)
+                                .build())
+                .spanType(spanType)
                 .name(name)
                 .kind(kind)
-                .startEpochNanos(startEpochNanos)
-                .endEpochNanos(endEpochNanos)
+                .timing(
+                        SpanTiming.builder()
+                                .startEpochMillis(startEpochMillis)
+                                .endEpochMillis(endEpochMillis)
+                                .build())
                 .attributes(attributes.toSpanAttributes())
                 .build();
     }
@@ -98,16 +109,16 @@ public class SpanDocument implements Serializable {
         @Field(type = FieldType.Integer)
         private Integer totalAddedValues;
 
-        public static Attributes from(Span.Attributes spanAttributes) {
+        public static Attributes from(SpanAttributes spanAttributes) {
             return Attributes.builder()
-                    .data(spanAttributes.getData())
-                    .capacity(spanAttributes.getCapacity())
-                    .totalAddedValues(spanAttributes.getTotalAddedValues())
+                    .data(spanAttributes.data())
+                    .capacity(spanAttributes.capacity())
+                    .totalAddedValues(spanAttributes.totalAddedValues())
                     .build();
         }
 
-        public Span.Attributes toSpanAttributes() {
-            return Span.Attributes.builder()
+        public SpanAttributes toSpanAttributes() {
+            return SpanAttributes.builder()
                     .data(data)
                     .capacity(capacity)
                     .totalAddedValues(totalAddedValues)

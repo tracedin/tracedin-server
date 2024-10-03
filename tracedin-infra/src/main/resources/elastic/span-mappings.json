@@ -9,26 +9,29 @@
     "traceId": {
       "type": "keyword"
     },
+    "projectKey": {
+      "type": "keyword"
+    },
     "parentSpanId": {
       "type": "keyword",
       "null_value": "null"
     },
+    "spanType": {
+      "type": "keyword"
+    },
     "name": {
-      "type": "text",
-      "fields": {
-        "keyword": {
-          "type": "keyword"
-        }
-      }
+      "type": "keyword"
     },
     "kind": {
       "type": "keyword"
     },
-    "startEpochNanos": {
-      "type": "long"
+    "endEpochMillis": {
+      "type": "date",
+      "format": "epoch_millis"
     },
-    "endEpochNanos": {
-      "type": "long"
+    "startEpochMillis": {
+      "type": "date",
+      "format": "epoch_millis"
     },
     "attributes": {
       "type": "nested",

@@ -1,24 +1,38 @@
 package com.univ.tracedin.api.span;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.span.dto.AppendSpanRequest;
+import com.univ.tracedin.api.span.dto.ReadSpanRequest;
+import com.univ.tracedin.common.dto.SearchCursor;
+import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.span.SpanService;
+import com.univ.tracedin.domain.span.Trace;
 
 @RestController
 @RequestMapping("/api/v1/spans")
 @RequiredArgsConstructor
-public class AppendSpanApi {
+@Slf4j
+public class SpanApi implements SpanApiDocs {
 
     private final SpanService spanService;
 
     @PostMapping
     public void appendSpan(@RequestBody AppendSpanRequest request) {
+        log.info("appendSpan request: {}", request.toString());
         spanService.appendSpan(request.toSpan());
+    }
+
+    @GetMapping("/traces")
+    public Response<SearchResult<Trace>> getTraces(ReadSpanRequest request, SearchCursor cursor) {
+        return Response.success(spanService.getTraces(request.toServiceNode(), cursor));
     }
 }

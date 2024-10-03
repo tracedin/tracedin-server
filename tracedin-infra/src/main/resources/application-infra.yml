@@ -19,12 +19,21 @@ spring:
 elasticsearch:
   client:
     host: ${ELASTIC_HOST}
-  host-and-port: ${ELASTICSEARCH_HOST_PORT:localhost:9200}
   port: 9200
 
 redis:
   host: localhost
   port: 6379
+
+logging:
+  level:
+    tracer: trace
+    org:
+      springframework:
+        data:
+          elasticsearch:
+            client:
+              WIRE: trace
 
 ---
 spring:
@@ -35,7 +44,6 @@ spring:
 elasticsearch:
   client:
     host: ${ELASTIC_HOST}
-  host-and-port: ${ELASTICSEARCH_HOST_PORT:es:9200}
   port: 9200
 
 redis:

@@ -48,7 +48,7 @@ public class SecurityConfig {
                                         .requestMatchers(getPermittedURIs())
                                         .permitAll()
                                         .anyRequest()
-                                        .authenticated())
+                                        .permitAll())
                 .exceptionHandling(
                         httpSecurityExceptionHandlingConfigurer ->
                                 httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(
