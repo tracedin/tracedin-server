@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
 import com.univ.tracedin.domain.auth.UserPrincipal;
+import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.NetworkTopology;
 import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.project.ProjectService;
@@ -43,5 +44,10 @@ public class ProjectApi implements ProjectApiDocs {
     @GetMapping("/{projectKey}/network-topology")
     public Response<NetworkTopology> networkTopology(@PathVariable String projectKey) {
         return Response.success(projectService.getNetworkTopology(projectKey));
+    }
+
+    @GetMapping("/{projectKey}/hit-map")
+    public Response<List<EndTimeBucket>> hitMap(@PathVariable String projectKey) {
+        return Response.success(projectService.getTraceHitMap(projectKey));
     }
 }

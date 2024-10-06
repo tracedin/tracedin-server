@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.ServiceNode;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanKind;
@@ -59,5 +60,10 @@ public class SpanCoreRepository implements SpanRepository {
         return spanElasticSearchRepository.findByTraceId(traceId.getValue()).stream()
                 .map(SpanDocument::toSpan)
                 .toList();
+    }
+
+    @Override
+    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey) {
+        return spanElasticSearchRepository.getTraceHitMapByProjectKey(projectKey);
     }
 }

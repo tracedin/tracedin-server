@@ -18,6 +18,7 @@ public class ProjectService {
     private final ProjectReader projectReader;
     private final ProjectAppender projectAppender;
     private final NetworkTopologyBuilder networkTopologyBuilder;
+    private final HitMapReader hitMapReader;
 
     public ProjectKey create(UserId creatorId, ProjectInfo projectInfo) {
         User user = userReader.read(creatorId);
@@ -30,5 +31,9 @@ public class ProjectService {
 
     public NetworkTopology getNetworkTopology(String projectKey) {
         return networkTopologyBuilder.build(projectKey);
+    }
+
+    public List<EndTimeBucket> getTraceHitMap(String projectKey) {
+        return hitMapReader.read(projectKey);
     }
 }

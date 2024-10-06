@@ -1,5 +1,6 @@
 package com.univ.tracedin.api.span.dto;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import com.univ.tracedin.domain.span.Span;
@@ -15,8 +16,10 @@ public record SpanResponse(
         String projectKey,
         SpanKind kind,
         SpanType spanType,
-        Long startEpochMillis,
-        Long endEpochMillis,
+        long startEpochMillis,
+        long endEpochMillis,
+        long duration,
+        LocalDateTime startDateTime,
         Map<String, Object> data,
         Integer capacity,
         Integer totalAddedValues) {
@@ -33,6 +36,8 @@ public record SpanResponse(
                 span.getSpanType(),
                 span.getTiming().startEpochMillis(),
                 span.getTiming().endEpochMillis(),
+                span.getDuration(),
+                span.getStartDateTime(),
                 span.getAttributes().data(),
                 span.getAttributes().capacity(),
                 span.getAttributes().totalAddedValues());

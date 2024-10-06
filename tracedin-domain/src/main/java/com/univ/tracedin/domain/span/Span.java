@@ -1,5 +1,6 @@
 package com.univ.tracedin.domain.span;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import lombok.AccessLevel;
@@ -25,5 +26,13 @@ public class Span {
 
     public boolean hasParent() {
         return !Objects.equals(parentId.getValue(), "0000000000000000");
+    }
+
+    public long getDuration() {
+        return timing.duration();
+    }
+
+    public LocalDateTime getStartDateTime() {
+        return timing.startDateTime();
     }
 }

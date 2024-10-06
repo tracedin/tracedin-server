@@ -5,6 +5,7 @@ import java.util.List;
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
 import com.univ.tracedin.domain.auth.UserPrincipal;
+import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.NetworkTopology;
 import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.project.ServiceNode;
@@ -23,4 +24,7 @@ public interface ProjectApiDocs {
 
     @Operation(summary = "네트워크 토폴로지 조회", description = "프로젝트의 네트워크 토폴로지를 조회합니다.")
     Response<NetworkTopology> networkTopology(String projectKey);
+
+    @Operation(summary = "히트맵 조회", description = "프로젝트의 히트맵을 조회합니다.(1시간별 트레이스의 응답시간 분포)")
+    Response<List<EndTimeBucket>> hitMap(String projectKey);
 }

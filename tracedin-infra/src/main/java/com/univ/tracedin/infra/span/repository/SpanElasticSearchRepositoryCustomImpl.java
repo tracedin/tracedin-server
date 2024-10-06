@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.EndTimeBucket;
+import com.univ.tracedin.domain.project.ResponseTimeBucket;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
@@ -24,9 +26,15 @@ import com.univ.tracedin.infra.span.exception.ElasticSearchException;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.Time;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.CompositeAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.CompositeAggregationSource;
+import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramAggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
+import co.elastic.clients.elasticsearch._types.aggregations.HistogramAggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.HistogramBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.TopHitsAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
@@ -146,6 +154,99 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                 });
     }
 
+    @Override
+    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey) {
+        Query query = rootSpanQuery(projectKey);
+        Aggregation aggregation = histogramAggregation();
+
+        return executeESQuery(
+                () -> {
+                    SearchResponse<Void> response =
+                            client.search(
+                                    s ->
+                                            s.index(INDEX_NAME)
+                                                    .size(0)
+                                                    .query(query)
+                                                    .aggregations("by_end_time", aggregation),
+                                    Void.class);
+
+                    return parseHistogramResponse(response);
+                });
+    }
+
+    private List<EndTimeBucket> parseHistogramResponse(SearchResponse<Void> response) {
+        List<EndTimeBucket> endTimeBuckets = new ArrayList<>();
+
+        Aggregate byEndTimeAgg = response.aggregations().get("by_end_time");
+        DateHistogramAggregate dateHistogram = byEndTimeAgg.dateHistogram();
+
+        for (DateHistogramBucket dateBucket : dateHistogram.buckets().array()) {
+            long endEpochMillis = dateBucket.key();
+
+            HistogramAggregate histogram =
+                    dateBucket
+                            .aggregations()
+                            .get("attributes_nested")
+                            .nested()
+                            .aggregations()
+                            .get("by_response_time")
+                            .histogram();
+
+            List<ResponseTimeBucket> responseTimeBuckets = new ArrayList<>();
+
+            for (HistogramBucket histogramBucket : histogram.buckets().array()) {
+                double responseTime = histogramBucket.key();
+                long count = histogramBucket.docCount();
+
+                ResponseTimeBucket responseTimeBucket =
+                        ResponseTimeBucket.from(responseTime, count);
+                responseTimeBuckets.add(responseTimeBucket);
+            }
+
+            EndTimeBucket endTimeBucket = EndTimeBucket.from(endEpochMillis, responseTimeBuckets);
+            endTimeBuckets.add(endTimeBucket);
+        }
+
+        return endTimeBuckets;
+    }
+
+    private Aggregation histogramAggregation() {
+        Aggregation byResponseTimeAgg =
+                Aggregation.of(
+                        a ->
+                                a.histogram(
+                                        h ->
+                                                h.field("attributes.data.http.response_time_ms")
+                                                        .interval(200.0)
+                                                        .minDocCount(1)));
+
+        Aggregation attributesNestedAgg =
+                Aggregation.of(
+                        a ->
+                                a.nested(n -> n.path("attributes"))
+                                        .aggregations(
+                                                Map.of("by_response_time", byResponseTimeAgg)));
+
+        return Aggregation.of(
+                a ->
+                        a.dateHistogram(
+                                        dh ->
+                                                dh.field("endEpochMillis")
+                                                        .fixedInterval(Time.of(t -> t.time("5m")))
+                                                        .minDocCount(1))
+                                .aggregations(Map.of("attributes_nested", attributesNestedAgg)));
+    }
+
+    private Query rootSpanQuery(String projectKey) {
+        return QueryBuilders.bool(
+                b ->
+                        b.must(
+                                QueryBuilders.term(t -> t.field("projectKey").value(projectKey)),
+                                QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
+                                QueryBuilders.term(
+                                        t -> t.field("parentSpanId").value("0000000000000000"))));
+    }
+
     private List<Trace> extractTraces(CompositeAggregate spansByTrace) {
         List<Trace> traces = new ArrayList<>();
         spansByTrace
@@ -227,9 +328,11 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                                                                                         f
                                                                                                                                 .includes(
                                                                                                                                         "traceId",
+                                                                                                                                        "serviceName",
                                                                                                                                         "startEpochMillis",
                                                                                                                                         "endEpochMillis",
-                                                                                                                                        "attributes.data.http.url")))))));
+                                                                                                                                        "attributes.data.http.url",
+                                                                                                                                        "attributes.data.http.status_code")))))));
     }
 
     private static Query createServiceSpanQuery(String projectKey, String serviceName) {
@@ -311,23 +414,12 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     }
 
     private Trace mapToTrace(JsonObject source) {
-        String url = null;
-
-        if (source.containsKey("attributes")) {
-            JsonObject attributes = source.getJsonObject("attributes");
-
-            if (attributes.containsKey("data")) {
-                JsonObject data = attributes.getJsonObject("data");
-
-                if (data.containsKey("http.url")) {
-                    url = data.getString("http.url");
-                }
-            }
-        }
-
+        JsonObject data = source.getJsonObject("attributes").getJsonObject("data");
         return Trace.builder()
                 .id(TraceId.from(source.getString("traceId")))
-                .endPoint(url)
+                .endPoint(data.getString("http.url"))
+                .serviceName(source.getString("serviceName"))
+                .statusCode(data.getInt("http.status_code"))
                 .endEpochMillis(source.getJsonNumber("endEpochMillis").longValue())
                 .startEpochMillis(source.getJsonNumber("startEpochMillis").longValue())
                 .build();

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.Trace;
 import com.univ.tracedin.infra.span.document.SpanDocument;
@@ -18,4 +19,6 @@ public interface SpanElasticSearchRepositoryCustom {
             String projectKey, String serviceName, int size, Map<String, Object> afterKey);
 
     List<SpanDocument> findByTraceId(String traceId);
+
+    List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey);
 }
