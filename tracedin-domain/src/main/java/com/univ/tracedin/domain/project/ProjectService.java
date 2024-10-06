@@ -17,7 +17,7 @@ public class ProjectService {
     private final UserReader userReader;
     private final ProjectReader projectReader;
     private final ProjectAppender projectAppender;
-    private final NetworkTopologyCalculator networkTopologyCalculator;
+    private final NetworkTopologyBuilder networkTopologyBuilder;
 
     public ProjectKey create(UserId creatorId, ProjectInfo projectInfo) {
         User user = userReader.read(creatorId);
@@ -29,6 +29,6 @@ public class ProjectService {
     }
 
     public NetworkTopology getNetworkTopology(String projectKey) {
-        return networkTopologyCalculator.calculate(projectKey);
+        return networkTopologyBuilder.build(projectKey);
     }
 }

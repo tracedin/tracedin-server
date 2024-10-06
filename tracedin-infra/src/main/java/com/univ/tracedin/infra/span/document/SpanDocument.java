@@ -19,10 +19,11 @@ import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanAttributes;
-import com.univ.tracedin.domain.span.SpanIds;
+import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanTiming;
 import com.univ.tracedin.domain.span.SpanType;
+import com.univ.tracedin.domain.span.TraceId;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(indexName = "span")
@@ -58,11 +59,11 @@ public class SpanDocument implements Serializable {
 
     public static SpanDocument from(Span span) {
         return SpanDocument.builder()
-                .spanId(span.getSpanIds().spanId())
+                .spanId(span.getId().getValue())
                 .serviceName(span.getServiceName())
                 .projectKey(span.getProjectKey())
-                .traceId(span.getSpanIds().traceId())
-                .parentSpanId(span.getSpanIds().parentSpanId())
+                .traceId(span.getTraceId().getValue())
+                .parentSpanId(span.getParentId().getValue())
                 .spanType(span.getSpanType())
                 .name(span.getName())
                 .kind(span.getKind())
@@ -74,14 +75,11 @@ public class SpanDocument implements Serializable {
 
     public Span toSpan() {
         return Span.builder()
+                .id(SpanId.from(spanId))
+                .traceId(TraceId.from(traceId))
+                .parentId(SpanId.from(parentSpanId))
                 .serviceName(serviceName)
                 .projectKey(projectKey)
-                .spanIds(
-                        SpanIds.builder()
-                                .spanId(spanId)
-                                .traceId(traceId)
-                                .parentSpanId(parentSpanId)
-                                .build())
                 .spanType(spanType)
                 .name(name)
                 .kind(kind)

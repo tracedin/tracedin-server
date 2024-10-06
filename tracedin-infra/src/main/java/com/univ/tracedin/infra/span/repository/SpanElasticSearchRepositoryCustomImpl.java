@@ -17,6 +17,7 @@ import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
+import com.univ.tracedin.domain.span.TraceId;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 import com.univ.tracedin.infra.span.exception.ElasticSearchException;
 
@@ -48,120 +49,130 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     public List<SpanDocument> search(String projectKey, SpanKind spanKind) {
         Query spanQuery = createSpanQuery(projectKey, spanKind);
 
-        try {
-            return client
-                    .search(
-                            s -> s.index(INDEX_NAME).size(10000).query(spanQuery),
-                            SpanDocument.class)
-                    .hits()
-                    .hits()
-                    .stream()
-                    .map(Hit::source)
-                    .toList();
-
-        } catch (IOException e) {
-            log.error("Failed to search spans", e);
-            throw ElasticSearchException.EXCEPTION;
-        }
+        return executeESQuery(
+                () ->
+                        client
+                                .search(
+                                        s -> s.index(INDEX_NAME).size(10000).query(spanQuery),
+                                        SpanDocument.class)
+                                .hits()
+                                .hits()
+                                .stream()
+                                .map(Hit::source)
+                                .toList());
     }
 
     @Override
     public List<String> findServiceNames(String projectKey) {
-        try {
-            SearchResponse<Void> response =
-                    client.search(
-                            s ->
-                                    s.index(INDEX_NAME)
-                                            .size(0)
-                                            .query(
-                                                    QueryBuilders.term(
-                                                            t ->
-                                                                    t.field("projectKey")
-                                                                            .value(projectKey)))
-                                            .aggregations(
-                                                    "service_nodes",
-                                                    createServiceNameAggregation()),
-                            Void.class);
+        return executeESQuery(
+                () -> {
+                    SearchResponse<Void> response =
+                            client.search(
+                                    s ->
+                                            s.index(INDEX_NAME)
+                                                    .size(0)
+                                                    .query(
+                                                            QueryBuilders.term(
+                                                                    t ->
+                                                                            t.field("projectKey")
+                                                                                    .value(
+                                                                                            projectKey)))
+                                                    .aggregations(
+                                                            "service_nodes",
+                                                            createServiceNameAggregation()),
+                                    Void.class);
 
-            return response
-                    .aggregations()
-                    .get(SERVICE_AGGREGATION_KEY)
-                    .sterms()
-                    .buckets()
-                    .array()
-                    .stream()
-                    .map(StringTermsBucket::key)
-                    .map(FieldValue::stringValue)
-                    .toList();
-        } catch (IOException e) {
-            log.error("Failed to search service names", e);
-            throw ElasticSearchException.EXCEPTION;
-        }
+                    return response
+                            .aggregations()
+                            .get(SERVICE_AGGREGATION_KEY)
+                            .sterms()
+                            .buckets()
+                            .array()
+                            .stream()
+                            .map(StringTermsBucket::key)
+                            .map(FieldValue::stringValue)
+                            .toList();
+                });
     }
 
     @Override
     public SearchResult<Trace> findTracesByServiceNode(
             String projectKey, String serviceName, int size, Map<String, Object> afterKey) {
-        try {
-            SearchResponse<Void> response =
-                    client.search(
-                            s ->
-                                    s.index(INDEX_NAME)
-                                            .size(0)
-                                            .query(createServiceSpanQuery(projectKey, serviceName))
-                                            .aggregations(
-                                                    "by_trace",
-                                                    createTraceAggregation(size, afterKey))
-                                            .aggregations(
-                                                    "trace_count",
-                                                    Aggregation.of(
-                                                            a ->
-                                                                    a.cardinality(
-                                                                            c ->
-                                                                                    c.field(
-                                                                                            "traceId")))),
-                            Void.class);
+        return executeESQuery(
+                () -> {
+                    SearchResponse<Void> response =
+                            client.search(
+                                    s ->
+                                            s.index(INDEX_NAME)
+                                                    .size(0)
+                                                    .query(
+                                                            createServiceSpanQuery(
+                                                                    projectKey, serviceName))
+                                                    .aggregations(
+                                                            "by_trace",
+                                                            createTraceAggregation(size, afterKey))
+                                                    .aggregations(
+                                                            "trace_count",
+                                                            Aggregation.of(
+                                                                    a ->
+                                                                            a.cardinality(
+                                                                                    c ->
+                                                                                            c.field(
+                                                                                                    "traceId")))),
+                                    Void.class);
 
-            // Trace 리스트를 담을 리스트
-            List<Trace> traces = new ArrayList<>();
+                    CompositeAggregate spansByTrace =
+                            response.aggregations().get("by_trace").composite();
+                    List<Trace> traces = extractTraces(spansByTrace);
+                    long traceCount =
+                            response.aggregations().get("trace_count").cardinality().value();
+                    Map<String, Object> nextAfterKey = toObjectMap(spansByTrace.afterKey());
+                    return SearchResult.success(traces, nextAfterKey, traceCount);
+                });
+    }
 
-            // Aggregation에서 "spans_by_trace" 집계를 가져옴
-            CompositeAggregate spansByTrace = response.aggregations().get("by_trace").composite();
+    @Override
+    public List<SpanDocument> findByTraceId(String traceId) {
+        Query query = QueryBuilders.term(t -> t.field("traceId").value(traceId));
 
-            long traceCount = response.aggregations().get("trace_count").cardinality().value();
+        return executeESQuery(
+                () -> {
+                    SearchResponse<SpanDocument> response =
+                            client.search(
+                                    s -> s.index(INDEX_NAME).size(100).query(query),
+                                    SpanDocument.class);
 
-            // 각 버킷에서 spanDetails 정보를 가져옴
-            spansByTrace
-                    .buckets()
-                    .array()
-                    .forEach(
-                            bucket -> {
-                                TopHitsAggregate spanDetails =
-                                        bucket.aggregations().get("span_details").topHits();
-                                spanDetails
-                                        .hits()
-                                        .hits()
-                                        .forEach(
-                                                hit -> {
-                                                    if (hit.source() == null) {
-                                                        return;
-                                                    }
-                                                    Trace trace =
-                                                            mapToTrace(
-                                                                    hit.source()
-                                                                            .toJson()
-                                                                            .asJsonObject());
+                    return response.hits().hits().stream().map(Hit::source).toList();
+                });
+    }
 
-                                                    traces.add(trace);
-                                                });
-                            });
+    private List<Trace> extractTraces(CompositeAggregate spansByTrace) {
+        List<Trace> traces = new ArrayList<>();
+        spansByTrace
+                .buckets()
+                .array()
+                .forEach(
+                        bucket -> {
+                            TopHitsAggregate spanDetails =
+                                    bucket.aggregations().get("span_details").topHits();
+                            spanDetails
+                                    .hits()
+                                    .hits()
+                                    .forEach(
+                                            hit -> {
+                                                if (hit.source() == null) {
+                                                    return;
+                                                }
+                                                Trace trace =
+                                                        mapToTrace(
+                                                                hit.source()
+                                                                        .toJson()
+                                                                        .asJsonObject());
 
-            Map<String, Object> nextAfterKey = toObjectMap(spansByTrace.afterKey());
-            return SearchResult.success(traces, nextAfterKey, traceCount);
-        } catch (IOException e) {
-            log.error("Failed to search spans", e);
-            throw ElasticSearchException.EXCEPTION;
-        }
+                                                traces.add(trace);
+                                            });
+                        });
+        return traces;
     }
 
     private Aggregation createTraceAggregation(int size, Map<String, Object> afterKey) {
@@ -216,8 +227,6 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                                                                                         f
                                                                                                                                 .includes(
                                                                                                                                         "traceId",
-                                                                                                                                        "spanId",
-                                                                                                                                        "spanType",
                                                                                                                                         "startEpochMillis",
                                                                                                                                         "endEpochMillis",
                                                                                                                                         "attributes.data.http.url")))))));
@@ -317,12 +326,19 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
         }
 
         return Trace.builder()
-                .traceId(source.getString("traceId"))
-                .spanId(source.getString("spanId"))
-                .spanType(SpanType.valueOf(source.getString("spanType")))
+                .id(TraceId.from(source.getString("traceId")))
                 .endPoint(url)
                 .endEpochMillis(source.getJsonNumber("endEpochMillis").longValue())
                 .startEpochMillis(source.getJsonNumber("startEpochMillis").longValue())
                 .build();
+    }
+
+    private <T> T executeESQuery(ESSupplier<T> request) {
+        try {
+            return request.get();
+        } catch (IOException e) {
+            log.error("Failed to search spans", e);
+            throw ElasticSearchException.EXCEPTION;
+        }
     }
 }

@@ -15,4 +15,20 @@ public class UserId extends BaseId<Long> {
     public static UserId from(Long id) {
         return new UserId(id);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof UserId userId)) {
+            return false;
+        }
+        return getValue().equals(userId.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return getValue().hashCode();
+    }
 }

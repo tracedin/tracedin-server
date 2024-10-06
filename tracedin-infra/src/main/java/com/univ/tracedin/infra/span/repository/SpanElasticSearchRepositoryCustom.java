@@ -16,4 +16,6 @@ public interface SpanElasticSearchRepositoryCustom {
 
     SearchResult<Trace> findTracesByServiceNode(
             String projectKey, String serviceName, int size, Map<String, Object> afterKey);
+
+    List<SpanDocument> findByTraceId(String traceId);
 }

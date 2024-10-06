@@ -12,10 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.span.dto.AppendSpanRequest;
 import com.univ.tracedin.api.span.dto.ReadSpanRequest;
+import com.univ.tracedin.api.span.dto.SpanTreeResponse;
+import com.univ.tracedin.api.span.dto.TraceResponse;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.span.SpanService;
-import com.univ.tracedin.domain.span.Trace;
+import com.univ.tracedin.domain.span.TraceId;
 
 @RestController
 @RequestMapping("/api/v1/spans")
@@ -32,7 +34,17 @@ public class SpanApi implements SpanApiDocs {
     }
 
     @GetMapping("/traces")
-    public Response<SearchResult<Trace>> getTraces(ReadSpanRequest request, SearchCursor cursor) {
-        return Response.success(spanService.getTraces(request.toServiceNode(), cursor));
+    public Response<SearchResult<TraceResponse>> getTraces(
+            ReadSpanRequest request, SearchCursor cursor) {
+        SearchResult<TraceResponse> responses =
+                spanService.getTraces(request.toServiceNode(), cursor).map(TraceResponse::from);
+        return Response.success(responses);
+    }
+
+    @GetMapping("/span-tree")
+    public Response<SpanTreeResponse> getSpanTreeByTrace(String traceId) {
+        SpanTreeResponse response =
+                SpanTreeResponse.from(spanService.getSpanTree(TraceId.from(traceId)));
+        return Response.success(response);
     }
 }

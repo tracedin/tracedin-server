@@ -15,4 +15,6 @@ public interface SpanRepository {
     List<Span> findByProjectKeyAndSpanKind(String projectKey, SpanKind spanKind);
 
     SearchResult<Trace> findTracesByServiceNode(ServiceNode serviceNode, SearchCursor cursor);
+
+    List<Span> findByTraceId(TraceId traceId);
 }

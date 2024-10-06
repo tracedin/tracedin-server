@@ -4,10 +4,11 @@ import java.util.Map;
 
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanAttributes;
-import com.univ.tracedin.domain.span.SpanIds;
+import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanTiming;
 import com.univ.tracedin.domain.span.SpanType;
+import com.univ.tracedin.domain.span.TraceId;
 
 public record AppendSpanRequest(
         String serviceName,
@@ -34,18 +35,14 @@ public record AppendSpanRequest(
     }
 
     public Span toSpan() {
-        SpanType type = spanType == null ? null : SpanType.fromValue(spanType);
         return Span.builder()
+                .id(SpanId.from(spanId))
+                .traceId(TraceId.from(traceId))
+                .parentId(SpanId.from(parentSpanId))
                 .name(name)
                 .serviceName(serviceName)
                 .projectKey(projectKey)
-                .spanIds(
-                        SpanIds.builder()
-                                .spanId(spanId)
-                                .traceId(traceId)
-                                .parentSpanId(parentSpanId)
-                                .build())
-                .spanType(type)
+                .spanType(getSpanType())
                 .kind(SpanKind.fromValue(kind))
                 .timing(
                         SpanTiming.builder()
@@ -54,6 +51,14 @@ public record AppendSpanRequest(
                                 .build())
                 .attributes(attributes.toDomain())
                 .build();
+    }
+
+    private SpanType getSpanType() {
+        SpanType type = spanType == null ? null : SpanType.fromValue(spanType);
+        if (attributes.data().containsKey("db.operation")) {
+            type = SpanType.QUERY;
+        }
+        return type;
     }
 
     private long nanosToMillis(long epochNanos) {

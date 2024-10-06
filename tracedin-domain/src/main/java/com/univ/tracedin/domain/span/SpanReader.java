@@ -23,4 +23,8 @@ public class SpanReader {
     public SearchResult<Trace> read(ServiceNode serviceNode, SearchCursor cursor) {
         return spanRepository.findTracesByServiceNode(serviceNode, cursor);
     }
+
+    public List<Span> read(TraceId traceId) {
+        return spanRepository.findByTraceId(traceId);
+    }
 }

@@ -14,6 +14,7 @@ import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanRepository;
 import com.univ.tracedin.domain.span.Trace;
+import com.univ.tracedin.domain.span.TraceId;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 
 @Transactional
@@ -51,5 +52,12 @@ public class SpanCoreRepository implements SpanRepository {
                 serviceNode.getName(),
                 cursor.size(),
                 cursor.afterKey());
+    }
+
+    @Override
+    public List<Span> findByTraceId(TraceId traceId) {
+        return spanElasticSearchRepository.findByTraceId(traceId.getValue()).stream()
+                .map(SpanDocument::toSpan)
+                .toList();
     }
 }

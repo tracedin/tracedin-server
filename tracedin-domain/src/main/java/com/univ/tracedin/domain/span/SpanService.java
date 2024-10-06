@@ -1,5 +1,7 @@
 package com.univ.tracedin.domain.span;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -21,5 +23,10 @@ public class SpanService {
 
     public SearchResult<Trace> getTraces(ServiceNode serviceNode, SearchCursor cursor) {
         return spanReader.read(serviceNode, cursor);
+    }
+
+    public SpanTree getSpanTree(TraceId traceId) {
+        List<Span> spans = spanReader.read(traceId);
+        return SpanTreeBuilder.build(spans);
     }
 }

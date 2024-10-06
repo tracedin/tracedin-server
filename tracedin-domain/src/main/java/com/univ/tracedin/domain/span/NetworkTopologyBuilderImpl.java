@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -12,17 +13,17 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.domain.project.Edge;
 import com.univ.tracedin.domain.project.NetworkTopology;
-import com.univ.tracedin.domain.project.NetworkTopologyCalculator;
+import com.univ.tracedin.domain.project.NetworkTopologyBuilder;
 import com.univ.tracedin.domain.project.ServiceNode;
 
 @Component
 @RequiredArgsConstructor
-public class NetworkTopologyCalculatorImpl implements NetworkTopologyCalculator {
+public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
 
     private final SpanReader spanReader;
 
     @Override
-    public NetworkTopology calculate(String projectKey) {
+    public NetworkTopology build(String projectKey) {
         List<Span> clientSpans = spanReader.read(projectKey, SpanKind.CLIENT);
         List<Span> serverSpans = spanReader.read(projectKey, SpanKind.SERVER);
         return calculate(projectKey, clientSpans, serverSpans);
@@ -31,28 +32,27 @@ public class NetworkTopologyCalculatorImpl implements NetworkTopologyCalculator 
     public NetworkTopology calculate(
             String projectKey, List<Span> clientSpans, List<Span> serverSpans) {
         // CLIENT 스팬을 traceId와 spanId로 매핑
-        Map<String, Map<String, Span>> clientSpanMap =
+        Map<TraceId, Map<SpanId, Span>> clientSpanMap =
                 clientSpans.stream()
                         .collect(
                                 Collectors.groupingBy(
-                                        span -> span.getSpanIds().traceId(),
-                                        Collectors.toMap(
-                                                span -> span.getSpanIds().spanId(), span -> span)));
+                                        Span::getTraceId,
+                                        Collectors.toMap(Span::getId, Function.identity())));
 
         // 노드 및 엣지 데이터를 저장할 맵
         Map<String, ServiceNode> nodeMap = new HashMap<>();
         Map<String, Edge> edgeMap = new HashMap<>();
 
         for (Span serverSpan : serverSpans) {
-            String traceId = serverSpan.getSpanIds().traceId();
-            String parentSpanId = serverSpan.getSpanIds().parentSpanId();
+            TraceId traceId = serverSpan.getTraceId();
+            SpanId serverParentId = serverSpan.getParentId();
 
-            Map<String, Span> spansBySpanId = clientSpanMap.get(traceId);
-            if (spansBySpanId == null) {
+            Map<SpanId, Span> clientSpansInTrace = clientSpanMap.get(traceId);
+            if (clientSpansInTrace == null) {
                 continue;
             }
 
-            Span clientSpan = spansBySpanId.get(parentSpanId);
+            Span clientSpan = clientSpansInTrace.get(serverParentId);
 
             if (clientSpan != null) {
                 String sourceService = clientSpan.getServiceName();
