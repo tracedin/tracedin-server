@@ -1,4 +1,4 @@
-package com.univ.tracedin.infra.span.repository;
+package com.univ.tracedin.infra.elasticsearch;
 
 import java.io.IOException;
 

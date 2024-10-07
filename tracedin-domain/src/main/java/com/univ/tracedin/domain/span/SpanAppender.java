@@ -1,5 +1,7 @@
 package com.univ.tracedin.domain.span;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -10,7 +12,7 @@ public class SpanAppender {
 
     private final SpanRepository spanRepository;
 
-    public void append(Span span) {
-        spanRepository.save(span);
+    public void append(List<Span> spans) {
+        spanRepository.save(spans);
     }
 }

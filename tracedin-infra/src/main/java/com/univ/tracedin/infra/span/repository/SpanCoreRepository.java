@@ -26,8 +26,8 @@ public class SpanCoreRepository implements SpanRepository {
     private final SpanElasticSearchRepository spanElasticSearchRepository;
 
     @Override
-    public void save(Span span) {
-        spanElasticSearchRepository.save(SpanDocument.from(span));
+    public void save(List<Span> spans) {
+        spanElasticSearchRepository.saveAll(spans.stream().map(SpanDocument::from).toList());
     }
 
     @Override

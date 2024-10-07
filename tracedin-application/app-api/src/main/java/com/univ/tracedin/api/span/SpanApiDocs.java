@@ -1,5 +1,7 @@
 package com.univ.tracedin.api.span;
 
+import java.util.List;
+
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.span.dto.AppendSpanRequest;
 import com.univ.tracedin.api.span.dto.ReadSpanRequest;
@@ -15,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface SpanApiDocs {
 
     @Operation(summary = "스팬 데이터 추가 API(라이브러리 전용)", description = "라이브러리에서 수집한 스팬 데이터를 추가합니다.")
-    void appendSpan(AppendSpanRequest request);
+    void appendSpan(List<AppendSpanRequest> request);
 
     @Operation(summary = "트레이스(트랜잭션) 조회 API", description = "프로젝트의 특정 서비스의 트레이스(트랜잭션)를 조회합니다.")
     Response<SearchResult<TraceResponse>> getTraces(ReadSpanRequest request, SearchCursor cursor);

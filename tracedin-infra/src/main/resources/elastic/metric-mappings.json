@@ -1,0 +1,51 @@
+{
+  "properties": {
+    "projectKey": {
+      "type": "keyword"
+    },
+    "serviceName": {
+      "type": "keyword"
+    },
+    "metrics": {
+      "type": "nested",
+      "properties": {
+        "name": {
+          "type": "keyword"
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "standard"
+        },
+        "unit": {
+          "type": "keyword"
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "value": {
+          "type": "double"
+        },
+        "count": {
+          "type": "long"
+        },
+        "sum": {
+          "type": "double"
+        },
+        "min": {
+          "type": "double"
+        },
+        "max": {
+          "type": "double"
+        },
+        "attributes": {
+          "type": "object",
+          "dynamic": true
+        },
+        "timestamp": {
+          "type": "date",
+          "format": "epoch_millis"
+        }
+      }
+    }
+  }
+}

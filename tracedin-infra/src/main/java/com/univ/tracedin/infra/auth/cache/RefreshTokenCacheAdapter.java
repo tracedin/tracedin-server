@@ -1,4 +1,4 @@
-package com.univ.tracedin.infra.user.cache;
+package com.univ.tracedin.infra.auth.cache;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;

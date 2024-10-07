@@ -1,4 +1,4 @@
-package com.univ.tracedin.infra.user.config;
+package com.univ.tracedin.infra.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

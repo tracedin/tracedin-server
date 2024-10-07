@@ -1,5 +1,7 @@
 package com.univ.tracedin.api.span;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,9 +30,9 @@ public class SpanApi implements SpanApiDocs {
     private final SpanService spanService;
 
     @PostMapping
-    public void appendSpan(@RequestBody AppendSpanRequest request) {
+    public void appendSpan(@RequestBody List<AppendSpanRequest> request) {
         log.info("appendSpan request: {}", request.toString());
-        spanService.appendSpan(request.toSpan());
+        spanService.appendSpan(request.stream().map(AppendSpanRequest::toSpan).toList());
     }
 
     @GetMapping("/traces")

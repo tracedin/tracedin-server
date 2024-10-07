@@ -1,14 +1,13 @@
 package com.univ.tracedin.infra.span.repository;
 
-import java.io.IOException;
+import static com.univ.tracedin.infra.elasticsearch.ESUtils.executeESQuery;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.json.JsonObject;
-
-import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
 import com.univ.tracedin.domain.span.TraceId;
 import com.univ.tracedin.infra.span.document.SpanDocument;
-import com.univ.tracedin.infra.span.exception.ElasticSearchException;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
@@ -45,7 +43,6 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
 
 @Slf4j
-@Repository
 @RequiredArgsConstructor
 public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchRepositoryCustom {
 
@@ -435,14 +432,5 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                 .endEpochMillis(source.getJsonNumber("endEpochMillis").longValue())
                 .startEpochMillis(source.getJsonNumber("startEpochMillis").longValue())
                 .build();
-    }
-
-    private <T> T executeESQuery(ESSupplier<T> request) {
-        try {
-            return request.get();
-        } catch (IOException e) {
-            log.error("Failed to search spans", e);
-            throw ElasticSearchException.EXCEPTION;
-        }
     }
 }

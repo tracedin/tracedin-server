@@ -9,7 +9,7 @@ import com.univ.tracedin.domain.project.ServiceNode;
 
 public interface SpanRepository {
 
-    void save(Span span);
+    void save(List<Span> spans);
 
     Span findById(String id);
 

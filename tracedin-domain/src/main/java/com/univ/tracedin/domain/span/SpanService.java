@@ -17,8 +17,8 @@ public class SpanService {
     private final SpanAppender spanAppender;
     private final SpanReader spanReader;
 
-    public void appendSpan(Span span) {
-        spanAppender.append(span);
+    public void appendSpan(List<Span> spans) {
+        spanAppender.append(spans);
     }
 
     public SearchResult<Trace> getTraces(ServiceNode serviceNode, SearchCursor cursor) {
