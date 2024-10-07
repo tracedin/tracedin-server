@@ -1,6 +1,7 @@
 package com.univ.tracedin.domain.span;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import lombok.AccessLevel;
@@ -22,7 +23,9 @@ public class Span {
     private SpanKind kind;
     private SpanType spanType;
     private SpanTiming timing;
+    private SpanStatus status;
     private SpanAttributes attributes;
+    private List<SpanEvent> events;
 
     public boolean hasParent() {
         return !Objects.equals(parentId.getValue(), "0000000000000000");

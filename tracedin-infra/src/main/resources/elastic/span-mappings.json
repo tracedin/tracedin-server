@@ -47,6 +47,21 @@
           "type": "integer"
         }
       }
+    },
+    "events": {
+      "type": "nested",
+      "properties": {
+        "name": {
+          "type": "keyword"
+        },
+        "attributes": {
+          "type": "object",
+          "enabled": true
+        },
+        "epochNanos": {
+          "type": "long"
+        }
+      }
     }
   }
 }

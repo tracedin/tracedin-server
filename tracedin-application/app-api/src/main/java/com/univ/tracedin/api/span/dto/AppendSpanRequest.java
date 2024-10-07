@@ -1,11 +1,14 @@
 package com.univ.tracedin.api.span.dto;
 
+import java.util.List;
 import java.util.Map;
 
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanAttributes;
+import com.univ.tracedin.domain.span.SpanEvent;
 import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
+import com.univ.tracedin.domain.span.SpanStatus;
 import com.univ.tracedin.domain.span.SpanTiming;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.TraceId;
@@ -21,7 +24,9 @@ public record AppendSpanRequest(
         String kind,
         long startEpochNanos,
         long endEpochNanos,
-        Attributes attributes) {
+        String spanStatus,
+        Attributes attributes,
+        List<Event> events) {
 
     public record Attributes(Map<String, Object> data, int capacity, int totalAddedValues) {
 
@@ -31,6 +36,13 @@ public record AppendSpanRequest(
                     .capacity(capacity)
                     .totalAddedValues(totalAddedValues)
                     .build();
+        }
+    }
+
+    public record Event(String name, Map<String, Object> attributes, long epochNanos) {
+
+        public SpanEvent toDomain() {
+            return new SpanEvent(name, attributes, epochNanos);
         }
     }
 
@@ -49,7 +61,9 @@ public record AppendSpanRequest(
                                 .startEpochMillis(nanosToMillis(startEpochNanos))
                                 .endEpochMillis(nanosToMillis(endEpochNanos))
                                 .build())
+                .status(SpanStatus.fromValue(spanStatus))
                 .attributes(attributes.toDomain())
+                .events(events.stream().map(Event::toDomain).toList())
                 .build();
     }
 

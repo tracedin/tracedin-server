@@ -42,6 +42,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.json.JsonData;
 
 @Slf4j
 @Repository
@@ -183,27 +184,23 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
         for (DateHistogramBucket dateBucket : dateHistogram.buckets().array()) {
             long endEpochMillis = dateBucket.key();
 
-            HistogramAggregate histogram =
-                    dateBucket
-                            .aggregations()
-                            .get("attributes_nested")
-                            .nested()
-                            .aggregations()
-                            .get("by_response_time")
-                            .histogram();
+            Map<String, Aggregate> attributesNested =
+                    dateBucket.aggregations().get("attributes_nested").nested().aggregations();
+
+            HistogramAggregate histogram = attributesNested.get("by_response_time").histogram();
 
             List<ResponseTimeBucket> responseTimeBuckets = new ArrayList<>();
 
             for (HistogramBucket histogramBucket : histogram.buckets().array()) {
                 double responseTime = histogramBucket.key();
                 long count = histogramBucket.docCount();
-
                 ResponseTimeBucket responseTimeBucket =
                         ResponseTimeBucket.from(responseTime, count);
                 responseTimeBuckets.add(responseTimeBucket);
             }
-
-            EndTimeBucket endTimeBucket = EndTimeBucket.from(endEpochMillis, responseTimeBuckets);
+            long errorCount = attributesNested.get("error_status_count").filter().docCount();
+            EndTimeBucket endTimeBucket =
+                    EndTimeBucket.from(endEpochMillis, errorCount, responseTimeBuckets);
             endTimeBuckets.add(endTimeBucket);
         }
 
@@ -220,12 +217,27 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                         .interval(200.0)
                                                         .minDocCount(1)));
 
+        Aggregation errorStatusCountAgg =
+                Aggregation.of(
+                        a ->
+                                a.filter(
+                                        f ->
+                                                f.range(
+                                                        r ->
+                                                                r.field(
+                                                                                "attributes.data.http.status_code")
+                                                                        .gte(JsonData.of(400)))));
+
         Aggregation attributesNestedAgg =
                 Aggregation.of(
                         a ->
                                 a.nested(n -> n.path("attributes"))
                                         .aggregations(
-                                                Map.of("by_response_time", byResponseTimeAgg)));
+                                                Map.of(
+                                                        "by_response_time",
+                                                        byResponseTimeAgg,
+                                                        "error_status_count",
+                                                        errorStatusCountAgg)));
 
         return Aggregation.of(
                 a ->

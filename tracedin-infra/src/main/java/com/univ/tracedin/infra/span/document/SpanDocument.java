@@ -1,6 +1,7 @@
 package com.univ.tracedin.infra.span.document;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.annotation.Id;
@@ -19,8 +20,10 @@ import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanAttributes;
+import com.univ.tracedin.domain.span.SpanEvent;
 import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
+import com.univ.tracedin.domain.span.SpanStatus;
 import com.univ.tracedin.domain.span.SpanTiming;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.TraceId;
@@ -55,7 +58,11 @@ public class SpanDocument implements Serializable {
 
     private Long endEpochMillis;
 
+    private SpanStatus status;
+
     private Attributes attributes;
+
+    private List<Event> events;
 
     public static SpanDocument from(Span span) {
         return SpanDocument.builder()
@@ -69,7 +76,9 @@ public class SpanDocument implements Serializable {
                 .kind(span.getKind())
                 .startEpochMillis(span.getTiming().startEpochMillis())
                 .endEpochMillis(span.getTiming().endEpochMillis())
+                .status(span.getStatus())
                 .attributes(Attributes.from(span.getAttributes()))
+                .events(span.getEvents().stream().map(Event::from).toList())
                 .build();
     }
 
@@ -88,7 +97,9 @@ public class SpanDocument implements Serializable {
                                 .startEpochMillis(startEpochMillis)
                                 .endEpochMillis(endEpochMillis)
                                 .build())
+                .status(status)
                 .attributes(attributes.toSpanAttributes())
+                .events(events.stream().map(Event::toSpanEvent).toList())
                 .build();
     }
 
@@ -120,6 +131,38 @@ public class SpanDocument implements Serializable {
                     .data(data)
                     .capacity(capacity)
                     .totalAddedValues(totalAddedValues)
+                    .build();
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Builder
+    public static class Event {
+
+        @Field(type = FieldType.Keyword)
+        private String name;
+
+        @Field(type = FieldType.Object)
+        private Map<String, Object> attributes;
+
+        @Field(type = FieldType.Long)
+        private Long epochNanos;
+
+        public static Event from(SpanEvent spanEvent) {
+            return Event.builder()
+                    .name(spanEvent.name())
+                    .attributes(spanEvent.attributes())
+                    .epochNanos(spanEvent.epochNanos())
+                    .build();
+        }
+
+        public SpanEvent toSpanEvent() {
+            return SpanEvent.builder()
+                    .name(name)
+                    .attributes(attributes)
+                    .epochNanos(epochNanos)
                     .build();
         }
     }
