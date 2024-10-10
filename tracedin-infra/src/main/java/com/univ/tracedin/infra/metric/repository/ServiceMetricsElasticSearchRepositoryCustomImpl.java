@@ -15,7 +15,6 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.json.JsonData;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -97,16 +96,17 @@ public class ServiceMetricsElasticSearchRepositoryCustomImpl
                                                                                                                                                         t.field(
                                                                                                                                                                         "metrics.name")
                                                                                                                                                                 .value(
-                                                                                                                                                                        "http.request.count")),
-                                                                                                                                QueryBuilders
-                                                                                                                                        .range(
-                                                                                                                                                r ->
-                                                                                                                                                        r.field(
-                                                                                                                                                                        "metrics.timestamp")
-                                                                                                                                                                .gte(
-                                                                                                                                                                        JsonData
-                                                                                                                                                                                .of(
-                                                                                                                                                                                        "now-5h/h")))))))))));
+                                                                                                                                                                        "http.request.count"))
+                                                                                                                                //                                                                                                                                , QueryBuilders
+                                                                                                                                //                                                                                                                                        .range(
+                                                                                                                                //                                                                                                                                                r ->
+                                                                                                                                //                                                                                                                                                        r.field(
+                                                                                                                                //                                                                                                                                                                        "metrics.timestamp")
+                                                                                                                                //                                                                                                                                                                .gte(
+                                                                                                                                //                                                                                                                                                                        JsonData
+                                                                                                                                //                                                                                                                                                                                .of(
+                                                                                                                                //                                                                                                                                                                                        "now-5h/h")))
+                                                                                                                                ))))))));
     }
 
     private Aggregation createTimestampAggregationHistogram() {
