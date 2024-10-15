@@ -2,11 +2,11 @@ package com.univ.tracedin.domain.metric;
 
 import java.util.List;
 
-import com.univ.tracedin.domain.project.ServiceNode;
+import com.univ.tracedin.domain.project.Node;
 
 public interface ServiceMetricsRepository {
 
-    void save(ServiceMetrics metrics);
+    List<HttpRequestCount> getHttpRequestCount(Node node);
 
-    List<HttpRequestCount> getHttpRequestCount(ServiceNode serviceNode);
+    void saveAll(List<ServiceMetrics> metrics);
 }

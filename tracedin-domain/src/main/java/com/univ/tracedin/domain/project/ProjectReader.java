@@ -16,7 +16,7 @@ public class ProjectReader {
         return projectRepository.getByOwner(projectOwner);
     }
 
-    public List<ServiceNode> readServiceNods(String projectKey) {
+    public List<Node> readServiceNods(String projectKey) {
         return projectRepository.findServiceNodeList(projectKey);
     }
 }

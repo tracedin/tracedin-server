@@ -1,7 +1,11 @@
 package com.univ.tracedin.domain.span;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import com.univ.tracedin.domain.global.BaseId;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SpanId extends BaseId<String> {
 
     public SpanId(String id) {

@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.span.dto.AppendSpanRequest;
-import com.univ.tracedin.api.span.dto.ReadSpanRequest;
+import com.univ.tracedin.api.span.dto.ReadTraceRequest;
 import com.univ.tracedin.api.span.dto.SpanTreeResponse;
 import com.univ.tracedin.api.span.dto.TraceResponse;
 import com.univ.tracedin.common.dto.SearchCursor;
@@ -32,14 +32,14 @@ public class SpanApi implements SpanApiDocs {
     @PostMapping
     public void appendSpan(@RequestBody List<AppendSpanRequest> request) {
         log.info("appendSpan request: {}", request.toString());
-        spanService.appendSpan(request.stream().map(AppendSpanRequest::toSpan).toList());
+        spanService.publishSpans(request.stream().map(AppendSpanRequest::toSpan).toList());
     }
 
     @GetMapping("/traces")
-    public Response<SearchResult<TraceResponse>> getTraces(
-            ReadSpanRequest request, SearchCursor cursor) {
+    public Response<SearchResult<TraceResponse>> searchTraces(
+            ReadTraceRequest request, SearchCursor cursor) {
         SearchResult<TraceResponse> responses =
-                spanService.getTraces(request.toServiceNode(), cursor).map(TraceResponse::from);
+                spanService.getTraces(request.toSearchCond(), cursor).map(TraceResponse::from);
         return Response.success(responses);
     }
 

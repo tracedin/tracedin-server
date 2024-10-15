@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface HitMapReader {
 
-    List<EndTimeBucket> read(String projectKey);
+    List<EndTimeBucket> read(String projectKey, String serviceName);
 }

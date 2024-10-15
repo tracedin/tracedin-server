@@ -3,6 +3,8 @@ package com.univ.tracedin.domain.span;
 public enum SpanKind {
     CLIENT,
     SERVER,
+    PRODUCER,
+    CONSUMER,
     INTERNAL;
 
     public static SpanKind fromValue(String value) {
@@ -11,6 +13,6 @@ public enum SpanKind {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown span type: " + value);
+        throw new IllegalArgumentException("Unknown span kind: " + value);
     }
 }

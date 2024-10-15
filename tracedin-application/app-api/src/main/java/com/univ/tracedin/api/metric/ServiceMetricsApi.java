@@ -14,7 +14,7 @@ import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.metric.dto.AppendServiceMetricsRequest;
 import com.univ.tracedin.api.metric.dto.HttpRequestCountResponse;
 import com.univ.tracedin.domain.metric.ServiceMetricsService;
-import com.univ.tracedin.domain.project.ServiceNode;
+import com.univ.tracedin.domain.project.Node;
 
 @RestController
 @RequestMapping("/api/v1/metrics")
@@ -29,9 +29,9 @@ public class ServiceMetricsApi implements ServiceMetricsApiDocs {
     }
 
     @GetMapping("/http-request-count")
-    public Response<List<HttpRequestCountResponse>> getHttpRequestCount(ServiceNode serviceNode) {
+    public Response<List<HttpRequestCountResponse>> getHttpRequestCount(Node node) {
         List<HttpRequestCountResponse> responses =
-                serviceMetricService.getHttpRequestCount(serviceNode).stream()
+                serviceMetricService.getHttpRequestCount(node).stream()
                         .map(HttpRequestCountResponse::from)
                         .toList();
         return Response.success(responses);

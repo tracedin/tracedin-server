@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum SpanType {
+    UNKNOWN("unknown"),
     HTTP("http"),
     METHOD("method"),
     QUERY("query");
@@ -16,6 +17,7 @@ public enum SpanType {
 
     public static SpanType fromValue(String value) {
         for (SpanType type : SpanType.values()) {
+
             if (type.value.equalsIgnoreCase(value)) {
                 return type;
             }

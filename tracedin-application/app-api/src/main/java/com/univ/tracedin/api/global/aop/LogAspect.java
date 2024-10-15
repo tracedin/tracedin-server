@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LogAspect {
 
     @Pointcut(
-            "execution(* com.univ.tracedin.domain..*(..)) && execution(* com.univ.tracedin.infra..*(..))&& !execution(* com.univ.tracedin.common..*(..))")
+            "execution(* com.univ.tracedin.domain..*(..)) || execution(* com.univ.tracedin.infra..*(..)) && !execution(* com.univ.tracedin.common..*(..))")
     public void all() {}
 
     @Pointcut(

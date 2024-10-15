@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.domain.metric.HttpRequestCount;
 import com.univ.tracedin.domain.metric.ServiceMetrics;
 import com.univ.tracedin.domain.metric.ServiceMetricsRepository;
-import com.univ.tracedin.domain.project.ServiceNode;
+import com.univ.tracedin.domain.project.Node;
 import com.univ.tracedin.infra.metric.document.ServiceMetricsDocument;
 
 @Repository
@@ -21,13 +21,15 @@ public class ServiceMetricsCoreRepository implements ServiceMetricsRepository {
 
     private final ServiceMetricsElasticSearchRepository serviceMetricsElasticSearchRepository;
 
-    public void save(ServiceMetrics metrics) {
-        serviceMetricsElasticSearchRepository.save(ServiceMetricsDocument.from(metrics));
+    public void saveAll(List<ServiceMetrics> metrics) {
+        List<ServiceMetricsDocument> documents =
+                metrics.stream().map(ServiceMetricsDocument::from).toList();
+        serviceMetricsElasticSearchRepository.saveAll(documents);
     }
 
     @Override
-    public List<HttpRequestCount> getHttpRequestCount(ServiceNode serviceNode) {
+    public List<HttpRequestCount> getHttpRequestCount(Node node) {
         return serviceMetricsElasticSearchRepository.getHttpRequestCount(
-                serviceNode.getProjectKey(), serviceNode.getName());
+                node.getProjectKey(), node.getName());
     }
 }

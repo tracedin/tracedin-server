@@ -68,7 +68,7 @@ public record AppendSpanRequest(
     }
 
     private SpanType getSpanType() {
-        SpanType type = spanType == null ? null : SpanType.fromValue(spanType);
+        SpanType type = spanType == null ? SpanType.UNKNOWN : SpanType.fromValue(spanType);
         if (attributes.data().containsKey("db.operation")) {
             type = SpanType.QUERY;
         }

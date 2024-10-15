@@ -1,9 +1,6 @@
 package com.univ.tracedin.domain.span;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -11,27 +8,43 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.project.Edge;
-import com.univ.tracedin.domain.project.NetworkTopology;
-import com.univ.tracedin.domain.project.NetworkTopologyBuilder;
-import com.univ.tracedin.domain.project.ServiceNode;
+import com.univ.tracedin.domain.project.*;
 
 @Component
 @RequiredArgsConstructor
 public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
 
+    private static final String KAFKA_NODE_NAME = "KAFKA";
     private final SpanReader spanReader;
 
     @Override
     public NetworkTopology build(String projectKey) {
-        List<Span> clientSpans = spanReader.read(projectKey, SpanKind.CLIENT);
-        List<Span> serverSpans = spanReader.read(projectKey, SpanKind.SERVER);
-        return calculate(projectKey, clientSpans, serverSpans);
+        List<Span> clientSpans = spanReader.read(projectKey, SpanType.HTTP, SpanKind.CLIENT);
+        List<Span> serverSpans = spanReader.read(projectKey, SpanType.HTTP, SpanKind.SERVER);
+        List<Span> producerSpans = spanReader.read(projectKey, SpanType.UNKNOWN, SpanKind.PRODUCER);
+        List<Span> consumerSpans = spanReader.read(projectKey, SpanType.UNKNOWN, SpanKind.CONSUMER);
+        List<Span> dbSpans = spanReader.read(projectKey, SpanType.QUERY, SpanKind.CLIENT);
+
+        Map<String, Node> nodeMap = new HashMap<>();
+        Map<String, Edge> edgeMap = new HashMap<>();
+
+        buildServiceNodesAndEdges(projectKey, clientSpans, serverSpans, nodeMap, edgeMap);
+        buildKafkaNodesAndEdges(projectKey, producerSpans, consumerSpans, nodeMap, edgeMap);
+        buildDatabaseNodesAndEdges(projectKey, dbSpans, nodeMap, edgeMap);
+
+        List<Node> nodes = nodeMap.values().stream().toList();
+        List<Edge> edges = edgeMap.values().stream().toList();
+
+        return NetworkTopology.of(nodes, edges);
     }
 
-    public NetworkTopology calculate(
-            String projectKey, List<Span> clientSpans, List<Span> serverSpans) {
-        // CLIENT 스팬을 traceId와 spanId로 매핑
+    private void buildServiceNodesAndEdges(
+            String projectKey,
+            List<Span> clientSpans,
+            List<Span> serverSpans,
+            Map<String, Node> nodeMap,
+            Map<String, Edge> edgeMap) {
+
         Map<TraceId, Map<SpanId, Span>> clientSpanMap =
                 clientSpans.stream()
                         .collect(
@@ -39,41 +52,88 @@ public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
                                         Span::getTraceId,
                                         Collectors.toMap(Span::getId, Function.identity())));
 
-        // 노드 및 엣지 데이터를 저장할 맵
-        Map<String, ServiceNode> nodeMap = new HashMap<>();
-        Map<String, Edge> edgeMap = new HashMap<>();
-
         for (Span serverSpan : serverSpans) {
-            TraceId traceId = serverSpan.getTraceId();
-            SpanId serverParentId = serverSpan.getParentId();
-
-            Map<SpanId, Span> clientSpansInTrace = clientSpanMap.get(traceId);
+            Map<SpanId, Span> clientSpansInTrace = clientSpanMap.get(serverSpan.getTraceId());
             if (clientSpansInTrace == null) {
                 continue;
             }
 
-            Span clientSpan = clientSpansInTrace.get(serverParentId);
-
+            Span clientSpan = clientSpansInTrace.get(serverSpan.getParentId());
             if (clientSpan != null) {
                 String sourceService = clientSpan.getServiceName();
                 String targetService = serverSpan.getServiceName();
 
-                // 노드 추가
                 nodeMap.computeIfAbsent(
-                        sourceService, service -> ServiceNode.of(projectKey, service));
+                        sourceService, service -> Node.of(projectKey, service, NodeType.SERVICE));
                 nodeMap.computeIfAbsent(
-                        targetService, service -> ServiceNode.of(projectKey, service));
+                        targetService, service -> Node.of(projectKey, service, NodeType.SERVICE));
 
-                // 엣지 추가 또는 업데이트
                 String edgeKey = sourceService + "->" + targetService;
                 edgeMap.computeIfAbsent(edgeKey, k -> Edge.init(sourceService, targetService))
                         .incrementRequestCount();
             }
         }
+    }
 
-        List<ServiceNode> serviceNodes = new ArrayList<>(nodeMap.values());
-        List<Edge> edges = new ArrayList<>(edgeMap.values());
+    private void buildKafkaNodesAndEdges(
+            String projectKey,
+            List<Span> producerSpans,
+            List<Span> consumerSpans,
+            Map<String, Node> nodeMap,
+            Map<String, Edge> edgeMap) {
 
-        return NetworkTopology.of(serviceNodes, edges);
+        // Kafka 노드 추가
+        nodeMap.computeIfAbsent(
+                KAFKA_NODE_NAME, kafka -> Node.of(projectKey, kafka, NodeType.KAFKA));
+
+        // 프로듀서 스팬 처리
+        for (Span producerSpan : producerSpans) {
+            String producerService = producerSpan.getServiceName();
+
+            nodeMap.computeIfAbsent(
+                    producerService, service -> Node.of(projectKey, service, NodeType.SERVICE));
+
+            String edgeKey = producerService + "->" + KAFKA_NODE_NAME;
+            edgeMap.computeIfAbsent(edgeKey, k -> Edge.init(producerService, KAFKA_NODE_NAME))
+                    .incrementRequestCount();
+        }
+
+        // 컨슈머 스팬 처리
+        for (Span consumerSpan : consumerSpans) {
+            String consumerService = consumerSpan.getServiceName();
+
+            nodeMap.computeIfAbsent(
+                    consumerService, service -> Node.of(projectKey, service, NodeType.SERVICE));
+
+            String edgeKey = KAFKA_NODE_NAME + "->" + consumerService;
+            edgeMap.computeIfAbsent(edgeKey, k -> Edge.init(KAFKA_NODE_NAME, consumerService))
+                    .incrementRequestCount();
+        }
+    }
+
+    private void buildDatabaseNodesAndEdges(
+            String projectKey,
+            List<Span> dbSpans,
+            Map<String, Node> nodeMap,
+            Map<String, Edge> edgeMap) {
+
+        for (Span dbSpan : dbSpans) {
+            Map<String, Object> attributes = dbSpan.getAttributes().data();
+            String serviceName = dbSpan.getServiceName();
+            String dbSystem = (String) attributes.get("db.system");
+
+            if (dbSystem == null) {
+                continue; // db.name 속성이 없으면 스킵
+            }
+
+            nodeMap.computeIfAbsent(
+                    serviceName, service -> Node.of(projectKey, service, NodeType.SERVICE));
+
+            nodeMap.computeIfAbsent(dbSystem, db -> Node.of(projectKey, db, NodeType.DATABASE));
+
+            String edgeKey = serviceName + "->" + dbSystem;
+            edgeMap.computeIfAbsent(edgeKey, k -> Edge.init(serviceName, dbSystem))
+                    .incrementRequestCount();
+        }
     }
 }

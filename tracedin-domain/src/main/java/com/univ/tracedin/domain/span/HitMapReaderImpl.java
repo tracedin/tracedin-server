@@ -16,7 +16,7 @@ public class HitMapReaderImpl implements HitMapReader {
     private final SpanRepository spanRepository;
 
     @Override
-    public List<EndTimeBucket> read(String projectKey) {
-        return spanRepository.getTraceHitMapByProjectKey(projectKey);
+    public List<EndTimeBucket> read(String projectKey, String serviceName) {
+        return spanRepository.getTraceHitMapByProjectKey(projectKey, serviceName);
     }
 }

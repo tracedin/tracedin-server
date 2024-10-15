@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
-import com.univ.tracedin.domain.project.ServiceNode;
 
 @Component
 @RequiredArgsConstructor
@@ -16,12 +15,12 @@ public class SpanReader {
 
     private final SpanRepository spanRepository;
 
-    public List<Span> read(String projectKey, SpanKind spanKind) {
-        return spanRepository.findByProjectKeyAndSpanKind(projectKey, spanKind);
+    public List<Span> read(String projectKey, SpanType spanType, SpanKind spanKind) {
+        return spanRepository.findByProjectKeyAndSpanKind(projectKey, spanType, spanKind);
     }
 
-    public SearchResult<Trace> read(ServiceNode serviceNode, SearchCursor cursor) {
-        return spanRepository.findTracesByServiceNode(serviceNode, cursor);
+    public SearchResult<Trace> read(TraceSearchCond cond, SearchCursor cursor) {
+        return spanRepository.findTracesByNode(cond, cursor);
     }
 
     public List<Span> read(TraceId traceId) {

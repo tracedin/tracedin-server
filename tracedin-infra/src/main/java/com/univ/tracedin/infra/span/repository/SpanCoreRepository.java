@@ -10,12 +10,13 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.project.EndTimeBucket;
-import com.univ.tracedin.domain.project.ServiceNode;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanRepository;
+import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
 import com.univ.tracedin.domain.span.TraceId;
+import com.univ.tracedin.domain.span.TraceSearchCond;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 
 @Transactional
@@ -26,7 +27,7 @@ public class SpanCoreRepository implements SpanRepository {
     private final SpanElasticSearchRepository spanElasticSearchRepository;
 
     @Override
-    public void save(List<Span> spans) {
+    public void saveAll(List<Span> spans) {
         spanElasticSearchRepository.saveAll(spans.stream().map(SpanDocument::from).toList());
     }
 
@@ -39,20 +40,16 @@ public class SpanCoreRepository implements SpanRepository {
     }
 
     @Override
-    public List<Span> findByProjectKeyAndSpanKind(String projectKey, SpanKind spanKind) {
-        return spanElasticSearchRepository.search(projectKey, spanKind).stream()
+    public List<Span> findByProjectKeyAndSpanKind(
+            String projectKey, SpanType spanType, SpanKind spanKind) {
+        return spanElasticSearchRepository.search(projectKey, spanType, spanKind).stream()
                 .map(SpanDocument::toSpan)
                 .toList();
     }
 
     @Override
-    public SearchResult<Trace> findTracesByServiceNode(
-            ServiceNode serviceNode, SearchCursor cursor) {
-        return spanElasticSearchRepository.findTracesByServiceNode(
-                serviceNode.getProjectKey(),
-                serviceNode.getName(),
-                cursor.size(),
-                cursor.afterKey());
+    public SearchResult<Trace> findTracesByNode(TraceSearchCond cond, SearchCursor cursor) {
+        return spanElasticSearchRepository.findTracesByNode(cond, cursor.size(), cursor.afterKey());
     }
 
     @Override
@@ -63,7 +60,7 @@ public class SpanCoreRepository implements SpanRepository {
     }
 
     @Override
-    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey) {
-        return spanElasticSearchRepository.getTraceHitMapByProjectKey(projectKey);
+    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, String serviceName) {
+        return spanElasticSearchRepository.getTraceHitMapByProjectKey(projectKey, serviceName);
     }
 }

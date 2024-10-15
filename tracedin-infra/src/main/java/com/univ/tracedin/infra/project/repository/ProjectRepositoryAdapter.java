@@ -8,10 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 
+import com.univ.tracedin.domain.project.Node;
+import com.univ.tracedin.domain.project.NodeType;
 import com.univ.tracedin.domain.project.Project;
 import com.univ.tracedin.domain.project.ProjectOwner;
 import com.univ.tracedin.domain.project.ProjectRepository;
-import com.univ.tracedin.domain.project.ServiceNode;
 import com.univ.tracedin.infra.project.entity.ProjectEntity;
 import com.univ.tracedin.infra.span.repository.SpanElasticSearchRepository;
 
@@ -36,8 +37,10 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public List<ServiceNode> findServiceNodeList(String projectKey) {
+    public List<Node> findServiceNodeList(String projectKey) {
         List<String> serviceNames = spanElasticSearchRepository.findServiceNames(projectKey);
-        return serviceNames.stream().map(name -> ServiceNode.of(projectKey, name)).toList();
+        return serviceNames.stream()
+                .map(name -> Node.of(projectKey, name, NodeType.SERVICE))
+                .toList();
     }
 }

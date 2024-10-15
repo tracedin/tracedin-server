@@ -12,7 +12,7 @@ public class SpanAppender {
 
     private final SpanRepository spanRepository;
 
-    public void append(List<Span> spans) {
-        spanRepository.save(spans);
+    public void appendAll(List<Span> spans) {
+        spanRepository.saveAll(spans);
     }
 }

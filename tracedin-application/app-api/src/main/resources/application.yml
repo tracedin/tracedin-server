@@ -25,7 +25,7 @@ jwt:
   access-token:
     expiration: 25920000
 server:
-  port: 8989
+  port: 8089
 ---
 spring:
   config:

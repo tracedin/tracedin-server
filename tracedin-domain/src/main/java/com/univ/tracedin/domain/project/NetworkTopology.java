@@ -10,10 +10,10 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class NetworkTopology {
 
-    private final List<ServiceNode> serviceNodes;
+    private final List<Node> nodes;
     private final List<Edge> edges;
 
-    public static NetworkTopology of(List<ServiceNode> serviceNodes, List<Edge> edges) {
-        return new NetworkTopology(serviceNodes, edges);
+    public static NetworkTopology of(List<Node> nodes, List<Edge> edges) {
+        return new NetworkTopology(nodes, edges);
     }
 }

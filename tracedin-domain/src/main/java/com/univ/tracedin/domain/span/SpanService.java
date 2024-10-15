@@ -8,21 +8,22 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
-import com.univ.tracedin.domain.project.ServiceNode;
 
 @Service
 @RequiredArgsConstructor
 public class SpanService {
 
-    private final SpanAppender spanAppender;
     private final SpanReader spanReader;
+    private final ConditionValidator conditionValidator;
+    private final SpanCollectedMessagePublisher spanCollectedMessagePublisher;
 
-    public void appendSpan(List<Span> spans) {
-        spanAppender.append(spans);
+    public void publishSpans(List<Span> spans) {
+        spanCollectedMessagePublisher.publish(SpanCollectedEvent.from(spans));
     }
 
-    public SearchResult<Trace> getTraces(ServiceNode serviceNode, SearchCursor cursor) {
-        return spanReader.read(serviceNode, cursor);
+    public SearchResult<Trace> getTraces(TraceSearchCond cond, SearchCursor cursor) {
+        conditionValidator.validate(cond);
+        return spanReader.read(cond, cursor);
     }
 
     public SpanTree getSpanTree(TraceId traceId) {

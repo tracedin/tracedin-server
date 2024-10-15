@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.project.ServiceNode;
+import com.univ.tracedin.domain.project.Node;
 
 @Component
 @RequiredArgsConstructor
@@ -14,7 +14,7 @@ public class ServiceMetricsReader {
 
     private final ServiceMetricsRepository serviceMetricsRepository;
 
-    public List<HttpRequestCount> readHttpRequestCount(ServiceNode serviceNode) {
-        return serviceMetricsRepository.getHttpRequestCount(serviceNode);
+    public List<HttpRequestCount> readHttpRequestCount(Node node) {
+        return serviceMetricsRepository.getHttpRequestCount(node);
     }
 }

@@ -25,7 +25,7 @@ public class ProjectService {
         return projectAppender.append(user, projectInfo);
     }
 
-    public List<ServiceNode> getServiceNodeList(String projectKey) {
+    public List<Node> getServiceNodeList(String projectKey) {
         return projectReader.readServiceNods(projectKey);
     }
 
@@ -33,7 +33,7 @@ public class ProjectService {
         return networkTopologyBuilder.build(projectKey);
     }
 
-    public List<EndTimeBucket> getTraceHitMap(String projectKey) {
-        return hitMapReader.read(projectKey);
+    public List<EndTimeBucket> getTraceHitMap(String projectKey, String serviceName) {
+        return hitMapReader.read(projectKey, serviceName);
     }
 }

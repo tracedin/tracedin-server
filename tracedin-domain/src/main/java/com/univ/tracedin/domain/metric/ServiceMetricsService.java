@@ -6,20 +6,20 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.project.ServiceNode;
+import com.univ.tracedin.domain.project.Node;
 
 @Service
 @RequiredArgsConstructor
 public class ServiceMetricsService {
 
-    private final ServiceMetricsAppender serviceMetricAppender;
     private final ServiceMetricsReader serviceMetricReader;
+    private final ServiceMetricsCollectedMessagePublisher serviceMetricsCollectedMessagePublisher;
 
     public void appendMetrics(ServiceMetrics metrics) {
-        serviceMetricAppender.append(metrics);
+        serviceMetricsCollectedMessagePublisher.publish(ServiceMetricsCollectedEvent.from(metrics));
     }
 
-    public List<HttpRequestCount> getHttpRequestCount(ServiceNode serviceNode) {
-        return serviceMetricReader.readHttpRequestCount(serviceNode);
+    public List<HttpRequestCount> getHttpRequestCount(Node node) {
+        return serviceMetricReader.readHttpRequestCount(node);
     }
 }

@@ -8,5 +8,5 @@ public interface ProjectRepository {
 
     List<Project> getByOwner(ProjectOwner owner);
 
-    List<ServiceNode> findServiceNodeList(String projectKey);
+    List<Node> findServiceNodeList(String projectKey);
 }

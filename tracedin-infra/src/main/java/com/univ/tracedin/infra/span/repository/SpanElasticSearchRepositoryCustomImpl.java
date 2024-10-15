@@ -19,6 +19,7 @@ import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
 import com.univ.tracedin.domain.span.TraceId;
+import com.univ.tracedin.domain.span.TraceSearchCond;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -36,11 +37,13 @@ import co.elastic.clients.elasticsearch._types.aggregations.HistogramBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.TopHitsAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery.Builder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
+import io.micrometer.common.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,8 +55,8 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     private final ElasticsearchClient client;
 
     @Override
-    public List<SpanDocument> search(String projectKey, SpanKind spanKind) {
-        Query spanQuery = createSpanQuery(projectKey, spanKind);
+    public List<SpanDocument> search(String projectKey, SpanType spanType, SpanKind spanKind) {
+        Query spanQuery = createSpanQuery(projectKey, spanType, spanKind);
 
         return executeESQuery(
                 () ->
@@ -102,8 +105,8 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     }
 
     @Override
-    public SearchResult<Trace> findTracesByServiceNode(
-            String projectKey, String serviceName, int size, Map<String, Object> afterKey) {
+    public SearchResult<Trace> findTracesByNode(
+            TraceSearchCond cond, int size, Map<String, Object> afterKey) {
         return executeESQuery(
                 () -> {
                     SearchResponse<Void> response =
@@ -111,9 +114,7 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                     s ->
                                             s.index(INDEX_NAME)
                                                     .size(0)
-                                                    .query(
-                                                            createServiceSpanQuery(
-                                                                    projectKey, serviceName))
+                                                    .query(createServiceSpanQuery(cond))
                                                     .aggregations(
                                                             "by_trace",
                                                             createTraceAggregation(size, afterKey))
@@ -153,8 +154,8 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     }
 
     @Override
-    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey) {
-        Query query = rootSpanQuery(projectKey);
+    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, String serviceName) {
+        Query query = rootSpanQuery(projectKey, serviceName);
         Aggregation aggregation = histogramAggregation();
 
         return executeESQuery(
@@ -246,14 +247,26 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                 .aggregations(Map.of("attributes_nested", attributesNestedAgg)));
     }
 
-    private Query rootSpanQuery(String projectKey) {
+    private Query rootSpanQuery(String projectKey, String serviceName) {
+        if (StringUtils.isBlank(serviceName)) {
+            return QueryBuilders.bool(
+                    b ->
+                            b.must(
+                                    QueryBuilders.term(
+                                            t -> t.field("projectKey").value(projectKey)),
+                                    QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
+                                    QueryBuilders.term(
+                                            t ->
+                                                    t.field("parentSpanId")
+                                                            .value("0000000000000000"))));
+        }
+
         return QueryBuilders.bool(
                 b ->
                         b.must(
                                 QueryBuilders.term(t -> t.field("projectKey").value(projectKey)),
-                                QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
-                                QueryBuilders.term(
-                                        t -> t.field("parentSpanId").value("0000000000000000"))));
+                                QueryBuilders.term(t -> t.field("serviceName").value(serviceName)),
+                                QueryBuilders.term(t -> t.field("spanType").value("HTTP"))));
     }
 
     private List<Trace> extractTraces(CompositeAggregate spansByTrace) {
@@ -344,27 +357,39 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                                                                                                         "attributes.data.http.status_code")))))));
     }
 
-    private static Query createServiceSpanQuery(String projectKey, String serviceName) {
-        return QueryBuilders.bool(
-                b ->
-                        b.must(
-                                List.of(
-                                        QueryBuilders.term(
-                                                t -> t.field("projectKey").value(projectKey)),
-                                        QueryBuilders.term(
-                                                t -> t.field("serviceName").value(serviceName)),
-                                        QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
-                                        QueryBuilders.term(
-                                                t ->
-                                                        t.field("parentSpanId")
-                                                                .value("0000000000000000")))));
+    private Query createServiceSpanQuery(TraceSearchCond cond) {
+        Builder bool = QueryBuilders.bool();
+
+        bool.must(
+                QueryBuilders.term(
+                        t -> t.field("projectKey").value(cond.serviceNode().getProjectKey())));
+        bool.must(
+                QueryBuilders.term(
+                        t -> t.field("serviceName").value(cond.serviceNode().getName())));
+        bool.must(QueryBuilders.term(t -> t.field("spanType").value("HTTP")));
+        bool.must(QueryBuilders.term(t -> t.field("kind").value("SERVER")));
+
+        if (cond.hasTimeRange()) {
+            bool.must(
+                    QueryBuilders.range(
+                            r ->
+                                    r.field("startEpochMillis")
+                                            .gte(JsonData.of(cond.getEpochMillisStartTime()))));
+            bool.must(
+                    QueryBuilders.range(
+                            r ->
+                                    r.field("endEpochMillis")
+                                            .lte(JsonData.of(cond.getEpochMillisEndTime()))));
+        }
+
+        return bool.build()._toQuery();
     }
 
     private Aggregation createServiceNameAggregation() {
         return Aggregation.of(a -> a.terms(t -> t.field("serviceName").size(100)));
     }
 
-    private Query createSpanQuery(String projectKey, SpanKind spanKind) {
+    private Query createSpanQuery(String projectKey, SpanType spanType, SpanKind spanKind) {
         return BoolQuery.of(
                         b ->
                                 b.must(
@@ -376,9 +401,7 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                 QueryBuilders.term(
                                                         t ->
                                                                 t.field("spanType")
-                                                                        .value(
-                                                                                SpanType.HTTP
-                                                                                        .name())),
+                                                                        .value(spanType.name())),
                                                 QueryBuilders.term(
                                                         t -> t.field("kind").value(spanKind.name()))
                                                 //                                                ,
