@@ -8,17 +8,16 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.univ.tracedin.domain.metric.ServiceMetrics;
-import com.univ.tracedin.domain.metric.ServiceMetricsAppender;
 import com.univ.tracedin.domain.metric.ServiceMetricsCollectedEvent;
+import com.univ.tracedin.domain.metric.ServiceMetricsMessageProcessor;
 import com.univ.tracedin.infra.kafka.KafkaConsumer;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MetricCollectedKafkaListener implements KafkaConsumer<ServiceMetricsCollectedEvent> {
+public class ServiceMetricsKafkaListener implements KafkaConsumer<ServiceMetricsCollectedEvent> {
 
-    private final ServiceMetricsAppender serviceMetricsAppender;
+    private final ServiceMetricsMessageProcessor serviceMetricsMessageProcessor;
 
     @Override
     @KafkaListener(
@@ -35,8 +34,6 @@ public class MetricCollectedKafkaListener implements KafkaConsumer<ServiceMetric
                 keys.toString(),
                 partitions.toString(),
                 offsets.toString());
-        List<ServiceMetrics> metrics =
-                messages.stream().map(ServiceMetricsCollectedEvent::serviceMetrics).toList();
-        serviceMetricsAppender.appendAll(metrics);
+        serviceMetricsMessageProcessor.process(messages);
     }
 }

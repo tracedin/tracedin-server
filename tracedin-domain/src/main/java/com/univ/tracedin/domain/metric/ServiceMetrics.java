@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.univ.tracedin.domain.project.Node;
+
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -17,4 +19,8 @@ public class ServiceMetrics {
     private String projectKey;
     private String serviceName;
     List<Metric> metrics;
+
+    public Node toNode() {
+        return Node.createService(projectKey, serviceName);
+    }
 }

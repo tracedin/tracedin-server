@@ -1,6 +1,6 @@
 package com.univ.tracedin.domain.span;
 
-public interface SpanCollectedMessagePublisher {
+public interface SpanMessagePublisher {
 
     void publish(SpanCollectedEvent event);
 }

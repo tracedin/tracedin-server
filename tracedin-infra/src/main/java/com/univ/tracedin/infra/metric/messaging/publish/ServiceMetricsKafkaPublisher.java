@@ -7,15 +7,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.domain.metric.ServiceMetricsCollectedEvent;
-import com.univ.tracedin.domain.metric.ServiceMetricsCollectedMessagePublisher;
+import com.univ.tracedin.domain.metric.ServiceMetricsMessagePublisher;
 import com.univ.tracedin.infra.kafka.KafkaMessageHelper;
 import com.univ.tracedin.infra.kafka.KafkaProducer;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ServiceMetricsCollectedKafkaEventPublisher
-        implements ServiceMetricsCollectedMessagePublisher {
+public class ServiceMetricsKafkaPublisher implements ServiceMetricsMessagePublisher {
 
     private final KafkaProducer<String, ServiceMetricsCollectedEvent> kafkaProducer;
     private final KafkaMessageHelper kafkaMessageHelper;
@@ -23,7 +22,6 @@ public class ServiceMetricsCollectedKafkaEventPublisher
     @Value("${kafka.topic.service-metrics}")
     private String serviceMetricsTopic;
 
-    @Override
     public void publish(ServiceMetricsCollectedEvent serviceMetricsCollectedEvent) {
         kafkaProducer.send(
                 serviceMetricsTopic,

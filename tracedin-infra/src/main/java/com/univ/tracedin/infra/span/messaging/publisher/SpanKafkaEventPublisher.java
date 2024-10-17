@@ -7,14 +7,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.domain.span.SpanCollectedEvent;
-import com.univ.tracedin.domain.span.SpanCollectedMessagePublisher;
+import com.univ.tracedin.domain.span.SpanMessagePublisher;
 import com.univ.tracedin.infra.kafka.KafkaMessageHelper;
 import com.univ.tracedin.infra.kafka.KafkaProducer;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SpanCollectedKafkaEventPublisher implements SpanCollectedMessagePublisher {
+public class SpanKafkaEventPublisher implements SpanMessagePublisher {
 
     private final KafkaProducer<String, SpanCollectedEvent> kafkaProducer;
     private final KafkaMessageHelper kafkaMessageHelper;

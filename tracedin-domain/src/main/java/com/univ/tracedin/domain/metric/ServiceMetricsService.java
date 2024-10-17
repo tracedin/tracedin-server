@@ -13,10 +13,10 @@ import com.univ.tracedin.domain.project.Node;
 public class ServiceMetricsService {
 
     private final ServiceMetricsReader serviceMetricReader;
-    private final ServiceMetricsCollectedMessagePublisher serviceMetricsCollectedMessagePublisher;
+    private final ServiceMetricsMessagePublisher serviceMetricsMessagePublisher;
 
     public void appendMetrics(ServiceMetrics metrics) {
-        serviceMetricsCollectedMessagePublisher.publish(ServiceMetricsCollectedEvent.from(metrics));
+        serviceMetricsMessagePublisher.publish(ServiceMetricsCollectedEvent.from(metrics));
     }
 
     public List<HttpRequestCount> getHttpRequestCount(Node node) {

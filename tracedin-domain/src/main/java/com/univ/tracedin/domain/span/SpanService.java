@@ -15,10 +15,10 @@ public class SpanService {
 
     private final SpanReader spanReader;
     private final ConditionValidator conditionValidator;
-    private final SpanCollectedMessagePublisher spanCollectedMessagePublisher;
+    private final SpanMessagePublisher spanMessagePublisher;
 
     public void publishSpans(List<Span> spans) {
-        spanCollectedMessagePublisher.publish(SpanCollectedEvent.from(spans));
+        spanMessagePublisher.publish(SpanCollectedEvent.from(spans));
     }
 
     public SearchResult<Trace> getTraces(TraceSearchCond cond, SearchCursor cursor) {
