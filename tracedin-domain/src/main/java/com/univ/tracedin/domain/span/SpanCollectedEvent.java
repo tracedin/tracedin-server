@@ -9,7 +9,7 @@ public record SpanCollectedEvent(List<Span> spans) implements Serializable {
         return new SpanCollectedEvent(spans);
     }
 
-    public String getKey() {
-        return spans.stream().map(Span::getTraceId).findFirst().orElseThrow().getValue();
+    public TraceId getKey() {
+        return spans.stream().map(Span::getTraceId).findFirst().orElseThrow();
     }
 }

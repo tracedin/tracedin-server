@@ -15,7 +15,8 @@ import com.univ.tracedin.infra.kafka.KafkaConsumer;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ServiceMetricsKafkaListener implements KafkaConsumer<ServiceMetricsCollectedEvent> {
+public class ServiceMetricsKafkaListener
+        implements KafkaConsumer<String, ServiceMetricsCollectedEvent> {
 
     private final ServiceMetricsMessageProcessor serviceMetricsMessageProcessor;
 

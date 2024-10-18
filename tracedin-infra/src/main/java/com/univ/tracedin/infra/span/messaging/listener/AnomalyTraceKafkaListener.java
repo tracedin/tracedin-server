@@ -8,23 +8,21 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.univ.tracedin.domain.span.Span;
-import com.univ.tracedin.domain.span.SpanAppender;
-import com.univ.tracedin.domain.span.SpanCollectedEvent;
 import com.univ.tracedin.domain.span.TraceId;
+import com.univ.tracedin.infra.anomaly.AnomalyTraceResult;
 import com.univ.tracedin.infra.kafka.KafkaConsumer;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SpanCollectedKafkaListener implements KafkaConsumer<TraceId, SpanCollectedEvent> {
-
-    private final SpanAppender spanAppender;
+public class AnomalyTraceKafkaListener implements KafkaConsumer<TraceId, AnomalyTraceResult> {
 
     @Override
-    @KafkaListener(id = "${kafka-consumer-config.span-group-id}", topics = "${kafka.topic.span}")
+    @KafkaListener(
+            id = "${kafka-consumer-config.anomaly-trace-group-id}",
+            topics = "${kafka.topic.anomaly-trace}")
     public void receive(
-            List<SpanCollectedEvent> messages,
+            List<AnomalyTraceResult> messages,
             List<TraceId> keys,
             List<Integer> partitions,
             List<Long> offsets) {
@@ -35,9 +33,6 @@ public class SpanCollectedKafkaListener implements KafkaConsumer<TraceId, SpanCo
                 partitions.toString(),
                 offsets.toString());
 
-        List<Span> spans =
-                messages.stream().map(SpanCollectedEvent::spans).flatMap(List::stream).toList();
-
-        spanAppender.appendAll(spans);
+        // TODO : AnomalySpanIds를 찾아 Abnormal 태그를 추가해 업데이트 작업 및 AnomalyTrace 테이블에 따로 저장
     }
 }

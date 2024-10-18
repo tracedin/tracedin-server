@@ -26,7 +26,7 @@ import com.univ.tracedin.domain.project.Node;
 public class ServiceMetricsApi implements ServiceMetricsApiDocs {
 
     private final ServiceMetricsService serviceMetricService;
-    private final SseConnector sseConnector;
+    private final SseConnector<Node> sseConnector;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(String projectKey, String serviceName) {

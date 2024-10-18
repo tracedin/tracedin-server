@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.domain.span.SpanCollectedEvent;
 import com.univ.tracedin.domain.span.SpanMessagePublisher;
+import com.univ.tracedin.domain.span.TraceId;
 import com.univ.tracedin.infra.kafka.KafkaMessageHelper;
 import com.univ.tracedin.infra.kafka.KafkaProducer;
 
@@ -16,7 +17,7 @@ import com.univ.tracedin.infra.kafka.KafkaProducer;
 @RequiredArgsConstructor
 public class SpanKafkaEventPublisher implements SpanMessagePublisher {
 
-    private final KafkaProducer<String, SpanCollectedEvent> kafkaProducer;
+    private final KafkaProducer<TraceId, SpanCollectedEvent> kafkaProducer;
     private final KafkaMessageHelper kafkaMessageHelper;
 
     @Value("${kafka.topic.span}")

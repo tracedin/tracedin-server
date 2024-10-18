@@ -58,6 +58,7 @@ public class KafkaConsumerConfig<K extends Serializable, V extends Serializable>
         props.put(
                 ConsumerConfig.MAX_POLL_RECORDS_CONFIG,
                 kafkaConsumerConfigData.getMaxPollRecords());
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, "true");
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return props;
     }

@@ -34,6 +34,7 @@ kafka:
   topic:
     span: spanCollectedEvent
     service-metrics: serviceMetricsCollectedEvent
+    anomaly-trace: anomalyTraceEvent
 
 kafka-config:
   bootstrap-servers: localhost:19092, localhost:29092, localhost:39092
@@ -41,7 +42,7 @@ kafka-config:
   replication-factor: 3
 
 kafka-producer-config:
-  key-serializer-class: org.apache.kafka.common.serialization.StringSerializer
+  key-serializer-class: org.springframework.kafka.support.serializer.JsonSerializer
   value-serializer-class: org.springframework.kafka.support.serializer.JsonSerializer
   compression-type: none
   acks: all
@@ -52,10 +53,11 @@ kafka-producer-config:
   retry-count: 5
 
 kafka-consumer-config:
-  key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  key-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
   value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
   span-group-id: tracedin-span
   service-metrics-group-id: tracedin-service-metrics
+  anomaly-trace-group-id: tracedin-anomaly-trace
   auto-offset-reset: earliest
   batch-listener: true
   auto-startup: true
@@ -67,6 +69,8 @@ kafka-consumer-config:
   max-partition-fetch-bytes-default: 1048576
   max-partition-fetch-bytes-boost-factor: 1
   poll-timeout-ms: 150
+
+kafka-application-id: tracedin-anomaly-streams
 
 redis:
   host: localhost
@@ -105,6 +109,7 @@ kafka:
   topic:
     span: spanCollectedEvent
     service-metrics: serviceMetricsCollectedEvent
+    anomaly-trace: anomalyTraceEvent
 
 kafka-config:
   bootstrap-servers: kafka-broker-1:9092, kafka-broker-3:9092, kafka-broker-3:9092
@@ -112,7 +117,7 @@ kafka-config:
   replication-factor: 3
 
 kafka-producer-config:
-  key-serializer-class: org.apache.kafka.common.serialization.StringSerializer
+  key-serializer-class: org.springframework.kafka.support.serializer.JsonSerializer
   value-serializer-class: org.springframework.kafka.support.serializer.JsonSerializer
   compression-type: none
   acks: all
@@ -123,10 +128,11 @@ kafka-producer-config:
   retry-count: 5
 
 kafka-consumer-config:
-  key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  key-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
   value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
   span-group-id: tracedin-span
   service-metrics-group-id: tracedin-service-metrics
+  anomaly-trace-group-id: tracedin-anomaly-trace
   auto-offset-reset: earliest
   batch-listener: true
   auto-startup: true
@@ -138,3 +144,5 @@ kafka-consumer-config:
   max-partition-fetch-bytes-default: 1048576
   max-partition-fetch-bytes-boost-factor: 1
   poll-timeout-ms: 150
+
+kafka-application-id: tracedin-anomaly-streams

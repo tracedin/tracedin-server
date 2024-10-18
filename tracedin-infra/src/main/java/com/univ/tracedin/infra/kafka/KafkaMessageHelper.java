@@ -12,10 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class KafkaMessageHelper {
 
-    public <T> CompletableFuture<SendResult<String, T>> getKafkaCallback(T payload) {
+    public <K, V> CompletableFuture<SendResult<K, V>> getKafkaCallback(V payload) {
         return new CompletableFuture<>() {
             @Override
-            public boolean complete(SendResult<String, T> value) {
+            public boolean complete(SendResult<K, V> value) {
                 RecordMetadata metadata = value.getRecordMetadata();
                 log.info(
                         "Kafka message sent successfully: Topic: {} Partition: {} Offset: {} Timestamp: {}",

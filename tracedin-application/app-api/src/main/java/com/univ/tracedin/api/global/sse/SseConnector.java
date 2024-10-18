@@ -7,27 +7,25 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.project.Node;
-
 @Component
 @RequiredArgsConstructor
-public class SseConnector {
+public class SseConnector<T> {
 
     public static final String CONNECTION_NAME = "CONNECT";
     public static final long TIMEOUT = 30 * 60 * 1000L;
 
     private final SseEmitterRepository sseEmitterRepository;
 
-    public SseEmitter connect(Node node) {
+    public SseEmitter connect(T key) {
         SseEmitter emitter = new SseEmitter(TIMEOUT);
-        sseEmitterRepository.save(node, emitter);
-        emitter.onTimeout(() -> sseEmitterRepository.remove(node));
-        emitter.onCompletion(() -> sseEmitterRepository.remove(node));
+        sseEmitterRepository.save(key, emitter);
+        emitter.onTimeout(() -> sseEmitterRepository.remove(key));
+        emitter.onCompletion(() -> sseEmitterRepository.remove(key));
 
         try {
             emitter.send(SseEmitter.event().id("").name(CONNECTION_NAME).data("emitter connected"));
         } catch (IOException e) {
-            sseEmitterRepository.remove(node);
+            sseEmitterRepository.remove(key);
             emitter.completeWithError(e);
         }
 

@@ -7,22 +7,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.univ.tracedin.domain.project.Node;
-
 @Repository
 public class SseEmitterRepository {
 
-    private final Map<Node, SseEmitter> emitters = new ConcurrentHashMap<>();
+    private final Map<Object, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    public void save(Node node, SseEmitter emitter) {
-        emitters.put(node, emitter);
+    public void save(Object key, SseEmitter emitter) {
+        emitters.put(key, emitter);
     }
 
-    public Optional<SseEmitter> findById(Node node) {
-        return Optional.ofNullable(emitters.get(node));
+    public Optional<SseEmitter> findById(Object key) {
+        return Optional.ofNullable(emitters.get(key));
     }
 
-    public void remove(Node node) {
-        emitters.remove(node);
+    public void remove(Object key) {
+        emitters.remove(key);
     }
 }

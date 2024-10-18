@@ -1,12 +1,14 @@
 package com.univ.tracedin.domain.span;
 
+import java.io.Serializable;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import com.univ.tracedin.domain.global.BaseId;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TraceId extends BaseId<String> {
+public class TraceId extends BaseId<String> implements Serializable {
 
     public TraceId(String id) {
         super(id);

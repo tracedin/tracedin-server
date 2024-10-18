@@ -34,7 +34,5 @@ public class SseSender implements EventSender {
                                 emitter.completeWithError(e);
                             }
                         });
-
-        System.out.println("serviceMetrics = " + serviceMetrics);
     }
 }
