@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.univ.tracedin.domain.user.User;
-
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,14 +20,11 @@ public class Project {
 
     private ProjectKey projectKey;
 
-    private ProjectOwner owner;
-
-    public static Project create(User user, ProjectInfo projectInfo) {
+    public static Project create(ProjectInfo projectInfo) {
         return Project.builder()
                 .name(projectInfo.projectName())
                 .description(projectInfo.description())
                 .projectKey(ProjectKey.create(projectInfo))
-                .owner(ProjectOwner.from(user))
                 .build();
     }
 }

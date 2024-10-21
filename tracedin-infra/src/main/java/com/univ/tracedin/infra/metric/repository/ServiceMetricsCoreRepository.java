@@ -30,6 +30,6 @@ public class ServiceMetricsCoreRepository implements ServiceMetricsRepository {
     @Override
     public List<HttpRequestCount> getHttpRequestCount(Node node) {
         return serviceMetricsElasticSearchRepository.getHttpRequestCount(
-                node.getProjectKey(), node.getName());
+                node.getProjectKey().value(), node.getName());
     }
 }

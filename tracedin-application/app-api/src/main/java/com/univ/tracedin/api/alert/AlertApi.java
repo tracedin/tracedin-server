@@ -26,8 +26,9 @@ public class AlertApi implements AlertApiDocs {
     private final AlertService alertService;
 
     @PostMapping("/methods")
-    public void appendAlertMethod(AppendAlertMethodRequest request) {
+    public Response<Void> appendAlertMethod(AppendAlertMethodRequest request) {
         alertService.appendMethod(request.toAlertInfo());
+        return Response.success();
     }
 
     @GetMapping("/methods")
@@ -36,12 +37,14 @@ public class AlertApi implements AlertApiDocs {
     }
 
     @PatchMapping("/methods/{alertMethodId}/deactivate")
-    public void deactivateAlertMethod(@PathVariable Long alertMethodId) {
+    public Response<Void> deactivateAlertMethod(@PathVariable Long alertMethodId) {
         alertService.deactivateMethod(AlertMethodId.from(alertMethodId));
+        return Response.success();
     }
 
     @PatchMapping("/methods/{alertMethodId}/activate")
-    public void activateAlertMethod(@PathVariable Long alertMethodId) {
+    public Response<Void> activateAlertMethod(@PathVariable Long alertMethodId) {
         alertService.activateMethod(AlertMethodId.from(alertMethodId));
+        return Response.success();
     }
 }

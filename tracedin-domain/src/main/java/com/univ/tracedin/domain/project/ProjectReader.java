@@ -6,21 +6,31 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
+import com.univ.tracedin.domain.user.User;
+
 @Component
 @RequiredArgsConstructor
 public class ProjectReader {
 
     private final ProjectRepository projectRepository;
+    private final ProjectMemberManager projectMemberManager;
 
-    public List<Project> read(ProjectOwner projectOwner) {
-        return projectRepository.getByOwner(projectOwner);
+    public List<Project> readAll(User user) {
+        List<ProjectMember> projectMembers = projectMemberManager.readAll(user);
+        List<ProjectId> projectIds =
+                projectMembers.stream().map(ProjectMember::getProjectId).toList();
+        return projectRepository.findAllByIds(projectIds);
     }
 
-    public Project readByKey(String projectKey) {
+    public Project read(ProjectId projectId) {
+        return projectRepository.findById(projectId);
+    }
+
+    public Project readByKey(ProjectKey projectKey) {
         return projectRepository.findByKey(projectKey);
     }
 
-    public List<Node> readServiceNods(String projectKey) {
-        return projectRepository.findServiceNodeList(projectKey);
+    public List<Node> readServiceNods(Project project) {
+        return projectRepository.findServiceNodeList(project.getProjectKey());
     }
 }

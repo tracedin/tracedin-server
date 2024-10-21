@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.univ.tracedin.domain.project.Node;
+import com.univ.tracedin.domain.project.ProjectKey;
 
 @Getter
 @Builder
@@ -16,7 +17,7 @@ import com.univ.tracedin.domain.project.Node;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ServiceMetrics {
 
-    private String projectKey;
+    private ProjectKey projectKey;
     private String serviceName;
     List<Metric> metrics;
 

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.univ.tracedin.domain.project.Node;
 import com.univ.tracedin.domain.project.NodeType;
+import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.span.TraceSearchCond;
 
 public record ReadTraceRequest(
@@ -11,6 +12,8 @@ public record ReadTraceRequest(
 
     public TraceSearchCond toSearchCond() {
         return new TraceSearchCond(
-                Node.of(projectKey, serviceName, NodeType.SERVICE), startTime, endTime);
+                Node.of(ProjectKey.from(projectKey), serviceName, NodeType.SERVICE),
+                startTime,
+                endTime);
     }
 }

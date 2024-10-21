@@ -7,6 +7,7 @@ import java.util.Map;
 import com.univ.tracedin.domain.metric.Metric;
 import com.univ.tracedin.domain.metric.MetricType;
 import com.univ.tracedin.domain.metric.ServiceMetrics;
+import com.univ.tracedin.domain.project.ProjectKey;
 
 public record AppendServiceMetricsRequest(
         String projectKey, String serviceName, List<MetricRequest> metrics) {
@@ -42,7 +43,7 @@ public record AppendServiceMetricsRequest(
 
     public ServiceMetrics toDomain() {
         return ServiceMetrics.builder()
-                .projectKey(projectKey)
+                .projectKey(ProjectKey.from(projectKey))
                 .serviceName(serviceName)
                 .metrics(metrics.stream().map(MetricRequest::toDomain).toList())
                 .build();

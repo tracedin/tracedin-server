@@ -19,6 +19,7 @@ import com.univ.tracedin.api.metric.dto.AppendServiceMetricsRequest;
 import com.univ.tracedin.api.metric.dto.HttpRequestCountResponse;
 import com.univ.tracedin.domain.metric.ServiceMetricsService;
 import com.univ.tracedin.domain.project.Node;
+import com.univ.tracedin.domain.project.ProjectKey;
 
 @RestController
 @RequestMapping("/api/v1/service-metrics")
@@ -30,7 +31,8 @@ public class ServiceMetricsApi implements ServiceMetricsApiDocs {
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subscribe(String projectKey, String serviceName) {
-        SseEmitter emitter = sseConnector.connect(Node.createService(projectKey, serviceName));
+        SseEmitter emitter =
+                sseConnector.connect(Node.createService(ProjectKey.from(projectKey), serviceName));
         return ResponseEntity.ok(emitter);
     }
 

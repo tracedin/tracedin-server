@@ -17,6 +17,7 @@ public class ProjectService {
     private final UserReader userReader;
     private final ProjectReader projectReader;
     private final ProjectAppender projectAppender;
+    private final ProjectMemberManager projectMemberManager;
     private final NetworkTopologyBuilder networkTopologyBuilder;
     private final HitMapReader hitMapReader;
 
@@ -25,15 +26,39 @@ public class ProjectService {
         return projectAppender.append(user, projectInfo);
     }
 
-    public List<Node> getServiceNodeList(String projectKey) {
-        return projectReader.readServiceNods(projectKey);
+    public List<Project> getProjectList(UserId userId) {
+        User user = userReader.read(userId);
+        return projectReader.readAll(user);
     }
 
-    public NetworkTopology getNetworkTopology(String projectKey) {
-        return networkTopologyBuilder.build(projectKey);
+    public List<Node> getServiceNodeList(ProjectKey projectKey) {
+        Project project = projectReader.readByKey(projectKey);
+        return projectReader.readServiceNods(project);
     }
 
-    public List<EndTimeBucket> getTraceHitMap(String projectKey, String serviceName) {
-        return hitMapReader.read(projectKey, serviceName);
+    public NetworkTopology getNetworkTopology(ProjectKey projectKey) {
+        Project project = projectReader.readByKey(projectKey);
+        return networkTopologyBuilder.build(project);
+    }
+
+    public List<EndTimeBucket> getTraceHitMap(ProjectKey projectKey, String serviceName) {
+        Project project = projectReader.readByKey(projectKey);
+        return hitMapReader.read(project, serviceName);
+    }
+
+    public void addMember(ProjectId projectId, String targetMemberEmail, MemberRole role) {
+        Project project = projectReader.read(projectId);
+        User targetUser = userReader.read(targetMemberEmail);
+        projectMemberManager.add(project, targetUser, role);
+    }
+
+    public void removeMember(ProjectMemberId projectMemberId) {
+        ProjectMember projectMember = projectMemberManager.read(projectMemberId);
+        projectMemberManager.remove(projectMember);
+    }
+
+    public void changeRole(ProjectMemberId projectMemberId, MemberRole role) {
+        ProjectMember projectMember = projectMemberManager.read(projectMemberId);
+        projectMemberManager.changeRole(projectMember, role);
     }
 }

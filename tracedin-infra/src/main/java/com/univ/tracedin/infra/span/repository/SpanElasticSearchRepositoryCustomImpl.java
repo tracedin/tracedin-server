@@ -363,7 +363,9 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
 
         bool.must(
                 QueryBuilders.term(
-                        t -> t.field("projectKey").value(cond.serviceNode().getProjectKey())));
+                        t ->
+                                t.field("projectKey")
+                                        .value(cond.serviceNode().getProjectKey().value())));
         bool.must(
                 QueryBuilders.term(
                         t -> t.field("serviceName").value(cond.serviceNode().getName())));

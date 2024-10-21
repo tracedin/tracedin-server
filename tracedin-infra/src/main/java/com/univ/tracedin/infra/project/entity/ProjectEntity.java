@@ -34,14 +34,11 @@ public class ProjectEntity {
 
     private String projectKey;
 
-    private Long ownerId;
-
     public static ProjectEntity from(Project project) {
         return ProjectEntity.builder()
                 .name(project.getName())
                 .description(project.getDescription())
                 .projectKey(project.getProjectKey().value())
-                .ownerId(project.getOwner().userId())
                 .build();
     }
 

@@ -18,19 +18,26 @@ public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
     private final SpanReader spanReader;
 
     @Override
-    public NetworkTopology build(String projectKey) {
-        List<Span> clientSpans = spanReader.read(projectKey, SpanType.HTTP, SpanKind.CLIENT);
-        List<Span> serverSpans = spanReader.read(projectKey, SpanType.HTTP, SpanKind.SERVER);
-        List<Span> producerSpans = spanReader.read(projectKey, SpanType.UNKNOWN, SpanKind.PRODUCER);
-        List<Span> consumerSpans = spanReader.read(projectKey, SpanType.UNKNOWN, SpanKind.CONSUMER);
-        List<Span> dbSpans = spanReader.read(projectKey, SpanType.QUERY, SpanKind.CLIENT);
+    public NetworkTopology build(Project project) {
+        List<Span> clientSpans =
+                spanReader.read(project.getProjectKey(), SpanType.HTTP, SpanKind.CLIENT);
+        List<Span> serverSpans =
+                spanReader.read(project.getProjectKey(), SpanType.HTTP, SpanKind.SERVER);
+        List<Span> producerSpans =
+                spanReader.read(project.getProjectKey(), SpanType.UNKNOWN, SpanKind.PRODUCER);
+        List<Span> consumerSpans =
+                spanReader.read(project.getProjectKey(), SpanType.UNKNOWN, SpanKind.CONSUMER);
+        List<Span> dbSpans =
+                spanReader.read(project.getProjectKey(), SpanType.QUERY, SpanKind.CLIENT);
 
         Map<String, Node> nodeMap = new HashMap<>();
         Map<String, Edge> edgeMap = new HashMap<>();
 
-        buildServiceNodesAndEdges(projectKey, clientSpans, serverSpans, nodeMap, edgeMap);
-        buildKafkaNodesAndEdges(projectKey, producerSpans, consumerSpans, nodeMap, edgeMap);
-        buildDatabaseNodesAndEdges(projectKey, dbSpans, nodeMap, edgeMap);
+        buildServiceNodesAndEdges(
+                project.getProjectKey(), clientSpans, serverSpans, nodeMap, edgeMap);
+        buildKafkaNodesAndEdges(
+                project.getProjectKey(), producerSpans, consumerSpans, nodeMap, edgeMap);
+        buildDatabaseNodesAndEdges(project.getProjectKey(), dbSpans, nodeMap, edgeMap);
 
         List<Node> nodes = nodeMap.values().stream().toList();
         List<Edge> edges = edgeMap.values().stream().toList();
@@ -39,7 +46,7 @@ public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
     }
 
     private void buildServiceNodesAndEdges(
-            String projectKey,
+            ProjectKey projectKey,
             List<Span> clientSpans,
             List<Span> serverSpans,
             Map<String, Node> nodeMap,
@@ -76,7 +83,7 @@ public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
     }
 
     private void buildKafkaNodesAndEdges(
-            String projectKey,
+            ProjectKey projectKey,
             List<Span> producerSpans,
             List<Span> consumerSpans,
             Map<String, Node> nodeMap,
@@ -112,7 +119,7 @@ public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
     }
 
     private void buildDatabaseNodesAndEdges(
-            String projectKey,
+            ProjectKey projectKey,
             List<Span> dbSpans,
             Map<String, Node> nodeMap,
             Map<String, Edge> edgeMap) {

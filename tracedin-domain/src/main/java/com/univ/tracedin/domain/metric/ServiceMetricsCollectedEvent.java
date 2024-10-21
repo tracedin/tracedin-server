@@ -9,6 +9,6 @@ public record ServiceMetricsCollectedEvent(ServiceMetrics serviceMetrics) implem
     }
 
     public String getKey() {
-        return serviceMetrics.getProjectKey() + "-" + serviceMetrics.getServiceName();
+        return serviceMetrics.getProjectKey().value() + "-" + serviceMetrics.getServiceName();
     }
 }

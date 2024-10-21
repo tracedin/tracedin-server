@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.ProjectKey;
 
 @Component
 @RequiredArgsConstructor
@@ -15,7 +16,7 @@ public class SpanReader {
 
     private final SpanRepository spanRepository;
 
-    public List<Span> read(String projectKey, SpanType spanType, SpanKind spanKind) {
+    public List<Span> read(ProjectKey projectKey, SpanType spanType, SpanKind spanKind) {
         return spanRepository.findByProjectKeyAndSpanKind(projectKey, spanType, spanKind);
     }
 

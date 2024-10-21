@@ -9,15 +9,15 @@ import lombok.Getter;
 @AllArgsConstructor
 public class Node {
 
-    private String projectKey;
+    private ProjectKey projectKey;
     private String name;
     private NodeType nodeType;
 
-    public static Node of(String projectKey, String serviceName, NodeType nodeType) {
+    public static Node of(ProjectKey projectKey, String serviceName, NodeType nodeType) {
         return new Node(projectKey, serviceName, nodeType);
     }
 
-    public static Node createService(String projectKey, String serviceName) {
+    public static Node createService(ProjectKey projectKey, String serviceName) {
         return new Node(projectKey, serviceName, NodeType.SERVICE);
     }
 

@@ -11,9 +11,15 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.domain.project.Node;
 import com.univ.tracedin.domain.project.NodeType;
 import com.univ.tracedin.domain.project.Project;
-import com.univ.tracedin.domain.project.ProjectOwner;
+import com.univ.tracedin.domain.project.ProjectId;
+import com.univ.tracedin.domain.project.ProjectKey;
+import com.univ.tracedin.domain.project.ProjectMember;
+import com.univ.tracedin.domain.project.ProjectMemberId;
 import com.univ.tracedin.domain.project.ProjectRepository;
+import com.univ.tracedin.domain.user.User;
 import com.univ.tracedin.infra.project.entity.ProjectEntity;
+import com.univ.tracedin.infra.project.entity.ProjectMemberEntity;
+import com.univ.tracedin.infra.project.exception.ProjectMemberNotFoundException;
 import com.univ.tracedin.infra.project.exception.ProjectNotFoundException;
 import com.univ.tracedin.infra.span.repository.SpanElasticSearchRepository;
 
@@ -23,6 +29,7 @@ import com.univ.tracedin.infra.span.repository.SpanElasticSearchRepository;
 public class ProjectRepositoryAdapter implements ProjectRepository {
 
     private final ProjectJpaRepository projectJpaRepository;
+    private final ProjectMemberJpaRepository projectMemberJpaRepository;
     private final SpanElasticSearchRepository spanElasticSearchRepository;
 
     @Override
@@ -31,25 +38,60 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public Project findByKey(String projectKey) {
+    public Project findById(ProjectId projectId) {
         return projectJpaRepository
-                .findByProjectKey(projectKey)
+                .findById(projectId.getValue())
                 .map(ProjectEntity::toDomain)
                 .orElseThrow(() -> ProjectNotFoundException.EXCEPTION);
     }
 
     @Override
-    public List<Project> getByOwner(ProjectOwner owner) {
-        return projectJpaRepository.findByOwnerId(owner.userId()).stream()
+    public List<Project> findAllByIds(List<ProjectId> projectIds) {
+        List<Long> ids = projectIds.stream().map(ProjectId::getValue).toList();
+        return projectJpaRepository.findAllInIds(ids).stream()
                 .map(ProjectEntity::toDomain)
                 .toList();
     }
 
     @Override
-    public List<Node> findServiceNodeList(String projectKey) {
-        List<String> serviceNames = spanElasticSearchRepository.findServiceNames(projectKey);
+    public Project findByKey(ProjectKey projectKey) {
+        return projectJpaRepository
+                .findByProjectKey(projectKey.value())
+                .map(ProjectEntity::toDomain)
+                .orElseThrow(() -> ProjectNotFoundException.EXCEPTION);
+    }
+
+    @Override
+    public List<Node> findServiceNodeList(ProjectKey projectKey) {
+        List<String> serviceNames =
+                spanElasticSearchRepository.findServiceNames(projectKey.value());
         return serviceNames.stream()
                 .map(name -> Node.of(projectKey, name, NodeType.SERVICE))
+                .toList();
+    }
+
+    @Override
+    public ProjectMember saveProjectMember(ProjectMember projectMember) {
+        return projectMemberJpaRepository.save(ProjectMemberEntity.from(projectMember)).toDomain();
+    }
+
+    @Override
+    public void deleteProjectMember(ProjectMember projectMember) {
+        projectMemberJpaRepository.delete(ProjectMemberEntity.from(projectMember));
+    }
+
+    @Override
+    public ProjectMember findProjectMemberById(ProjectMemberId id) {
+        return projectMemberJpaRepository
+                .findById(id.getValue())
+                .map(ProjectMemberEntity::toDomain)
+                .orElseThrow(() -> ProjectMemberNotFoundException.EXCEPTION);
+    }
+
+    @Override
+    public List<ProjectMember> findProjectMembersByUser(User user) {
+        return projectMemberJpaRepository.findByMemberId(user.getId().getValue()).stream()
+                .map(ProjectMemberEntity::toDomain)
                 .toList();
     }
 }
