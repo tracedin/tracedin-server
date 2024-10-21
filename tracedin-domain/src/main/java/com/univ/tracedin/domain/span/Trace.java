@@ -16,6 +16,7 @@ public class Trace {
 
     private TraceId id;
     private String endPoint;
+    private boolean isAnomaly;
     private String serviceName;
     private int statusCode;
     private long startEpochMillis;

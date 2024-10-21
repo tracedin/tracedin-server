@@ -37,6 +37,11 @@ public class Span {
         return timing.duration();
     }
 
+    public Span setAnomaly() {
+        attributes.data().put("anomaly", true);
+        return this;
+    }
+
     public LocalDateTime getStartDateTime() {
         return timing.startDateTime();
     }

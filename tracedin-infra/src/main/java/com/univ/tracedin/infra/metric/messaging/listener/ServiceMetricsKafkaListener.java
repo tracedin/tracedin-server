@@ -2,6 +2,7 @@ package com.univ.tracedin.infra.metric.messaging.listener;
 
 import java.util.List;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -24,17 +25,16 @@ public class ServiceMetricsKafkaListener
     @KafkaListener(
             id = "${kafka-consumer-config.service-metrics-group-id}",
             topics = "${kafka.topic.service-metrics}")
-    public void receive(
-            List<ServiceMetricsCollectedEvent> messages,
-            List<String> keys,
-            List<Integer> partitions,
-            List<Long> offsets) {
+    public void receive(List<ConsumerRecord<String, ServiceMetricsCollectedEvent>> records) {
         log.info(
                 "{} number of service metrics collected events received with keys:{}, partitions:{} and offsets: {}",
-                messages.size(),
-                keys.toString(),
-                partitions.toString(),
-                offsets.toString());
-        serviceMetricsMessageProcessor.process(messages);
+                records.size(),
+                records.stream().map(ConsumerRecord::key).toList(),
+                records.stream().map(ConsumerRecord::partition).toList(),
+                records.stream().map(ConsumerRecord::offset).toList());
+
+        List<ServiceMetricsCollectedEvent> events =
+                records.stream().map(ConsumerRecord::value).toList();
+        serviceMetricsMessageProcessor.process(events);
     }
 }

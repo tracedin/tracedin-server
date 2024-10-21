@@ -1,4 +1,4 @@
-package com.univ.tracedin.infra.span.messaging.streams;
+package com.univ.tracedin.infra.anomaly.messaging.streams;
 
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.KStream;

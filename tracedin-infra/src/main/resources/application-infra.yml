@@ -10,7 +10,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         show-sql: true
@@ -76,6 +76,8 @@ redis:
   host: localhost
   port: 6379
 
+server:
+  url: http://localhost:8089
 
 
 ---
@@ -146,3 +148,6 @@ kafka-consumer-config:
   poll-timeout-ms: 150
 
 kafka-application-id: tracedin-anomaly-streams
+
+server:
+  url: ${SERVER_URL}

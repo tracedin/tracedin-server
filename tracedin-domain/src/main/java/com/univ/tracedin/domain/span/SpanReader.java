@@ -26,4 +26,8 @@ public class SpanReader {
     public List<Span> read(TraceId traceId) {
         return spanRepository.findByTraceId(traceId);
     }
+
+    public Span read(SpanId spanId) {
+        return spanRepository.findById(spanId);
+    }
 }

@@ -11,6 +11,7 @@ import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.span.Span;
+import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanRepository;
 import com.univ.tracedin.domain.span.SpanType;
@@ -32,9 +33,14 @@ public class SpanCoreRepository implements SpanRepository {
     }
 
     @Override
-    public Span findById(String id) {
+    public void save(Span span) {
+        spanElasticSearchRepository.save(SpanDocument.from(span));
+    }
+
+    @Override
+    public Span findById(SpanId id) {
         return spanElasticSearchRepository
-                .findById(id)
+                .findById(id.getValue())
                 .map(SpanDocument::toSpan)
                 .orElseThrow(() -> new RuntimeException("Span not found"));
     }

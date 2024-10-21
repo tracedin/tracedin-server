@@ -18,6 +18,9 @@ dependencies {
         exclude group: 'co.elastic.clients', module: 'elasticsearch-java'
     }
 
+    //slack
+    implementation 'com.slack.api:slack-api-client:1.44.0'
+
     implementation('co.elastic.clients:elasticsearch-java:8.10.4')
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }

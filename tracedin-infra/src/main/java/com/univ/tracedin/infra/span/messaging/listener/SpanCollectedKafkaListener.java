@@ -2,6 +2,7 @@ package com.univ.tracedin.infra.span.messaging.listener;
 
 import java.util.List;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -23,20 +24,20 @@ public class SpanCollectedKafkaListener implements KafkaConsumer<TraceId, SpanCo
 
     @Override
     @KafkaListener(id = "${kafka-consumer-config.span-group-id}", topics = "${kafka.topic.span}")
-    public void receive(
-            List<SpanCollectedEvent> messages,
-            List<TraceId> keys,
-            List<Integer> partitions,
-            List<Long> offsets) {
+    public void receive(List<ConsumerRecord<TraceId, SpanCollectedEvent>> records) {
         log.info(
                 "{} number of span collected events received with keys:{}, partitions:{} and offsets: {}",
-                messages.size(),
-                keys.toString(),
-                partitions.toString(),
-                offsets.toString());
+                records.size(),
+                records.stream().map(ConsumerRecord::key).toList(),
+                records.stream().map(ConsumerRecord::partition).toList(),
+                records.stream().map(ConsumerRecord::offset).toList());
 
         List<Span> spans =
-                messages.stream().map(SpanCollectedEvent::spans).flatMap(List::stream).toList();
+                records.stream()
+                        .map(ConsumerRecord::value)
+                        .map(SpanCollectedEvent::spans)
+                        .flatMap(List::stream)
+                        .toList();
 
         spanAppender.appendAll(spans);
     }

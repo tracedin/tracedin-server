@@ -12,6 +12,7 @@ public record TraceResponse(
         long startEpochMillis,
         long endEpochMillis,
         long duration,
+        boolean isAnomaly,
         LocalDateTime startDateTime) {
 
     public static TraceResponse from(Trace trace) {
@@ -23,6 +24,7 @@ public record TraceResponse(
                 trace.getStartEpochMillis(),
                 trace.getEndEpochMillis(),
                 trace.duration(),
+                trace.isAnomaly(),
                 trace.startDateTime());
     }
 }

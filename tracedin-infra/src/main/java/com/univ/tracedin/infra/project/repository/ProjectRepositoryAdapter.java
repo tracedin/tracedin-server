@@ -14,6 +14,7 @@ import com.univ.tracedin.domain.project.Project;
 import com.univ.tracedin.domain.project.ProjectOwner;
 import com.univ.tracedin.domain.project.ProjectRepository;
 import com.univ.tracedin.infra.project.entity.ProjectEntity;
+import com.univ.tracedin.infra.project.exception.ProjectNotFoundException;
 import com.univ.tracedin.infra.span.repository.SpanElasticSearchRepository;
 
 @Repository
@@ -27,6 +28,14 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     @Override
     public Project save(Project project) {
         return projectJpaRepository.save(ProjectEntity.from(project)).toDomain();
+    }
+
+    @Override
+    public Project findByKey(String projectKey) {
+        return projectJpaRepository
+                .findByProjectKey(projectKey)
+                .map(ProjectEntity::toDomain)
+                .orElseThrow(() -> ProjectNotFoundException.EXCEPTION);
     }
 
     @Override

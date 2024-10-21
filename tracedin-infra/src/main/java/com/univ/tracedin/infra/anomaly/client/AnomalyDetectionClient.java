@@ -1,4 +1,4 @@
-package com.univ.tracedin.infra.anomaly;
+package com.univ.tracedin.infra.anomaly.client;
 
 import java.util.List;
 

@@ -10,7 +10,7 @@ public interface SpanRepository {
 
     void saveAll(List<Span> spans);
 
-    Span findById(String id);
+    Span findById(SpanId id);
 
     List<Span> findByProjectKeyAndSpanKind(String projectKey, SpanType spanType, SpanKind spanKind);
 
@@ -19,4 +19,6 @@ public interface SpanRepository {
     List<Span> findByTraceId(TraceId traceId);
 
     List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, String serviceName);
+
+    void save(Span span);
 }

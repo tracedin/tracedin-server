@@ -16,6 +16,10 @@ public class ProjectReader {
         return projectRepository.getByOwner(projectOwner);
     }
 
+    public Project readByKey(String projectKey) {
+        return projectRepository.findByKey(projectKey);
+    }
+
     public List<Node> readServiceNods(String projectKey) {
         return projectRepository.findServiceNodeList(projectKey);
     }

@@ -1,4 +1,4 @@
-package com.univ.tracedin.infra.span.messaging.streams;
+package com.univ.tracedin.infra.anomaly.messaging.streams;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanCollectedEvent;
 import com.univ.tracedin.domain.span.TraceId;
-import com.univ.tracedin.infra.anomaly.AnomalyDetectionClient;
+import com.univ.tracedin.infra.anomaly.client.AnomalyDetectionClient;
 
 @Component
 @EnableKafka

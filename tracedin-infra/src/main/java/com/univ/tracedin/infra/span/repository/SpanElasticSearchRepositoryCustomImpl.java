@@ -354,7 +354,8 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                                                                                                         "startEpochMillis",
                                                                                                                                         "endEpochMillis",
                                                                                                                                         "attributes.data.http.url",
-                                                                                                                                        "attributes.data.http.status_code")))))));
+                                                                                                                                        "attributes.data.http.status_code",
+                                                                                                                                        "attributes.data.anomaly")))))));
     }
 
     private Query createServiceSpanQuery(TraceSearchCond cond) {
@@ -447,8 +448,10 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
 
     private Trace mapToTrace(JsonObject source) {
         JsonObject data = source.getJsonObject("attributes").getJsonObject("data");
+
         return Trace.builder()
                 .id(TraceId.from(source.getString("traceId")))
+                .isAnomaly(data.containsKey("anomaly"))
                 .endPoint(data.getString("http.url"))
                 .serviceName(source.getString("serviceName"))
                 .statusCode(data.getInt("http.status_code"))
