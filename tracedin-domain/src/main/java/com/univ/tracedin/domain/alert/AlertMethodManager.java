@@ -31,13 +31,10 @@ public class AlertMethodManager {
         alertMethodRepository.deleteMethod(alertMethod);
     }
 
-    public void deactivate(AlertMethod alertMethod) {
-        alertMethod.deactivate();
-        alertMethodRepository.saveMethod(alertMethod);
-    }
-
-    public void activate(AlertMethod alertMethod) {
-        alertMethod.activate();
-        alertMethodRepository.saveMethod(alertMethod);
+    public void changeStatus(AlertMethod alertMethod, AlertMethodStatus status) {
+        switch (status) {
+            case ACTIVE -> alertMethod.activate();
+            case INACTIVE -> alertMethod.inactivate();
+        }
     }
 }

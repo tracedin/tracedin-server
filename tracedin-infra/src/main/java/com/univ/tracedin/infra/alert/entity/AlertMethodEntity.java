@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 
 import com.univ.tracedin.domain.alert.AlertMethod;
 import com.univ.tracedin.domain.alert.AlertMethodId;
+import com.univ.tracedin.domain.alert.AlertMethodStatus;
 import com.univ.tracedin.domain.alert.AlertType;
 import com.univ.tracedin.domain.project.ProjectId;
 
@@ -38,7 +39,7 @@ public class AlertMethodEntity {
 
     private String contact;
 
-    private boolean isActivated;
+    private AlertMethodStatus status;
 
     public static AlertMethodEntity from(AlertMethod alertMethod) {
         Long alertMethodId = (alertMethod.getId() == null) ? null : alertMethod.getId().getValue();
@@ -47,7 +48,7 @@ public class AlertMethodEntity {
                 .projectId(alertMethod.getProjectId().getValue())
                 .alertType(alertMethod.getAlertType())
                 .contact(alertMethod.getContact())
-                .isActivated(alertMethod.isActivated())
+                .status(alertMethod.getStatus())
                 .build();
     }
 
@@ -57,7 +58,7 @@ public class AlertMethodEntity {
                 .projectId(ProjectId.from(projectId))
                 .alertType(alertType)
                 .contact(contact)
-                .isActivated(isActivated)
+                .status(status)
                 .build();
     }
 }

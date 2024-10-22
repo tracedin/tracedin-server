@@ -23,4 +23,8 @@ public interface ProjectRepository {
     List<ProjectMember> findProjectMembersByUser(User user);
 
     List<Project> findAllByIds(List<ProjectId> projectIds);
+
+    List<ProjectMember> findProjectMembersByProject(Project project);
+
+    void findProjectMemberByUserAndProject(User user, Project project);
 }

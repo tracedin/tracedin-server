@@ -20,6 +20,7 @@ public class ProjectService {
     private final ProjectMemberManager projectMemberManager;
     private final NetworkTopologyBuilder networkTopologyBuilder;
     private final HitMapReader hitMapReader;
+    private final ProjectValidator projectValidator;
 
     public ProjectKey create(UserId creatorId, ProjectInfo projectInfo) {
         User user = userReader.read(creatorId);
@@ -31,34 +32,50 @@ public class ProjectService {
         return projectReader.readAll(user);
     }
 
-    public List<Node> getServiceNodeList(ProjectKey projectKey) {
-        Project project = projectReader.readByKey(projectKey);
-        return projectReader.readServiceNods(project);
+    public List<Node> getServiceNodeList(UserId userId, ProjectKey projectKey) {
+        User currentUser = userReader.read(userId);
+        Project targetProject = projectReader.read(projectKey);
+        projectValidator.validate(currentUser, targetProject);
+        return projectReader.readServiceNods(targetProject);
     }
 
-    public NetworkTopology getNetworkTopology(ProjectKey projectKey) {
-        Project project = projectReader.readByKey(projectKey);
-        return networkTopologyBuilder.build(project);
+    public NetworkTopology getNetworkTopology(UserId userId, ProjectKey projectKey) {
+        User currentUser = userReader.read(userId);
+        Project targetProject = projectReader.read(projectKey);
+        projectValidator.validate(currentUser, targetProject);
+        return networkTopologyBuilder.build(targetProject);
     }
 
-    public List<EndTimeBucket> getTraceHitMap(ProjectKey projectKey, String serviceName) {
-        Project project = projectReader.readByKey(projectKey);
+    public List<EndTimeBucket> getTraceHitMap(
+            UserId userId, ProjectKey projectKey, String serviceName) {
+        User currentUser = userReader.read(userId);
+        Project project = projectReader.read(projectKey);
+        projectValidator.validate(currentUser, project);
         return hitMapReader.read(project, serviceName);
     }
 
-    public void addMember(ProjectId projectId, String targetMemberEmail, MemberRole role) {
+    public void addMember(
+            UserId userId, ProjectId projectId, String targetMemberEmail, MemberRole role) {
+        User user = userReader.read(userId);
         Project project = projectReader.read(projectId);
         User targetUser = userReader.read(targetMemberEmail);
+        projectValidator.validate(user, project, MemberRole.ADMIN);
         projectMemberManager.add(project, targetUser, role);
     }
 
-    public void removeMember(ProjectMemberId projectMemberId) {
+    public void removeMember(UserId userId, ProjectMemberId projectMemberId) {
+        User user = userReader.read(userId);
         ProjectMember projectMember = projectMemberManager.read(projectMemberId);
+        Project targetProject = projectReader.read(projectMember.getProjectId());
+        projectValidator.validate(user, targetProject, MemberRole.ADMIN);
         projectMemberManager.remove(projectMember);
     }
 
-    public void changeRole(ProjectMemberId projectMemberId, MemberRole role) {
+    public void changeRole(UserId userId, ProjectMemberId projectMemberId, MemberRole role) {
+        User user = userReader.read(userId);
         ProjectMember projectMember = projectMemberManager.read(projectMemberId);
+        Project targetProject = projectReader.read(projectMember.getProjectId());
+        projectValidator.validate(user, targetProject, MemberRole.ADMIN);
         projectMemberManager.changeRole(projectMember, role);
     }
 }

@@ -9,6 +9,7 @@ import com.univ.tracedin.api.span.dto.SpanTreeResponse;
 import com.univ.tracedin.api.span.dto.TraceResponse;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.auth.UserPrincipal;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +22,7 @@ public interface SpanApiDocs {
 
     @Operation(summary = "트레이스(트랜잭션) 조회 API", description = "프로젝트의 특정 서비스의 트레이스(트랜잭션)를 조회합니다.")
     Response<SearchResult<TraceResponse>> searchTraces(
-            ReadTraceRequest request, SearchCursor cursor);
+            UserPrincipal currentUser, ReadTraceRequest request, SearchCursor cursor);
 
     @Operation(
             summary = "트레이스(트랜잭션) 내 스팬트리 조회 API",

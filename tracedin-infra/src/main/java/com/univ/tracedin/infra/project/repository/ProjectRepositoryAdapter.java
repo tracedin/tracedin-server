@@ -94,4 +94,18 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
                 .map(ProjectMemberEntity::toDomain)
                 .toList();
     }
+
+    @Override
+    public List<ProjectMember> findProjectMembersByProject(Project project) {
+        return projectMemberJpaRepository.findByProjectId(project.getId().getValue()).stream()
+                .map(ProjectMemberEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void findProjectMemberByUserAndProject(User user, Project project) {
+        projectMemberJpaRepository
+                .findByProjectIdAndMemberId(project.getId().getValue(), user.getId().getValue())
+                .orElseThrow(() -> ProjectMemberNotFoundException.EXCEPTION);
+    }
 }

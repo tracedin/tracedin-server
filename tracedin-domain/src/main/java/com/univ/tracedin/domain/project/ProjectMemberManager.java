@@ -24,6 +24,10 @@ public class ProjectMemberManager {
         return projectRepository.findProjectMemberById(id);
     }
 
+    public List<ProjectMember> read(Project project) {
+        return projectRepository.findProjectMembersByProject(project);
+    }
+
     public void remove(ProjectMember projectMember) {
         projectRepository.deleteProjectMember(projectMember);
     }
@@ -35,5 +39,9 @@ public class ProjectMemberManager {
 
     public List<ProjectMember> readAll(User user) {
         return projectRepository.findProjectMembersByUser(user);
+    }
+
+    public void read(User admin, Project project) {
+        projectRepository.findProjectMemberByUserAndProject(admin, project);
     }
 }
