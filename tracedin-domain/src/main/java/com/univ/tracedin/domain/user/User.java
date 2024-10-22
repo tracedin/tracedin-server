@@ -18,18 +18,16 @@ public class User {
 
     private String email;
 
-    private String phoneNumber;
-
     private String password;
 
     private UserRole role;
 
-    public static User create(UserProfile userProfile, String password) {
+    public static User create(UserProfile userProfile, String password, UserRole role) {
         return User.builder()
                 .name(userProfile.name())
                 .email(userProfile.email())
                 .password(password)
-                .role(userProfile.role())
+                .role(role)
                 .build();
     }
 

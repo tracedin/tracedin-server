@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+import com.univ.tracedin.domain.user.User;
 import com.univ.tracedin.domain.user.UserAppender;
 import com.univ.tracedin.domain.user.UserProfile;
 
@@ -15,8 +16,8 @@ public class AuthService {
     private final UserAppender userAppender;
     private final UserAuthenticator userAuthenticator;
 
-    public void signUp(UserProfile profile, String password) {
-        userAppender.append(profile, passwordEncoder.encode(password));
+    public User signUp(UserProfile profile, String password) {
+        return userAppender.append(profile, passwordEncoder.encode(password));
     }
 
     public Tokens login(LoginInfo login) {

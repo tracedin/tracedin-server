@@ -7,7 +7,6 @@ import com.univ.tracedin.api.project.dto.AddMemberRequest;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
 import com.univ.tracedin.api.project.dto.NodeResponse;
 import com.univ.tracedin.api.project.dto.ProjectResponse;
-import com.univ.tracedin.domain.auth.UserPrincipal;
 import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.MemberRole;
 import com.univ.tracedin.domain.project.NetworkTopology;
@@ -20,10 +19,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface ProjectApiDocs {
 
     @Operation(summary = "프로젝트 생성", description = "프로젝트를 생성하고 프로젝트 키를 반환합니다.")
-    Response<ProjectKey> createProject(CreateProjectRequest request, UserPrincipal currentUser);
+    Response<ProjectKey> createProject(CreateProjectRequest request, Long userId);
 
     @Operation(summary = "프로젝트 리스트 조회", description = "사용자의 프로젝트 리스트를 조회합니다.")
-    Response<List<ProjectResponse>> projectList(UserPrincipal currentUser);
+    Response<List<ProjectResponse>> projectList(Long userId);
 
     @Operation(summary = "서비스 리스트 조회", description = "프로젝트의 서비스 노드 리스트를 조회합니다.")
     Response<List<NodeResponse>> serviceNodes(String projectKey);

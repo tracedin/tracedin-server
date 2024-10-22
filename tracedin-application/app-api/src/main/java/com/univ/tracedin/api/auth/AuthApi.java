@@ -11,9 +11,12 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.api.auth.dto.LoginRequest;
 import com.univ.tracedin.api.auth.dto.SignUpRequest;
+import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.global.util.TokenUtils;
+import com.univ.tracedin.api.user.dto.UserResponse;
 import com.univ.tracedin.domain.auth.AuthService;
 import com.univ.tracedin.domain.auth.Tokens;
+import com.univ.tracedin.domain.user.User;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -23,8 +26,9 @@ public class AuthApi implements AuthApiDocs {
     private final AuthService authService;
 
     @PostMapping("/sign-up")
-    public void signup(@RequestBody SignUpRequest request) {
-        authService.signUp(request.toUserProfile(), request.password());
+    public Response<UserResponse> signup(@RequestBody SignUpRequest request) {
+        User signUpUser = authService.signUp(request.toUserProfile(), request.password());
+        return Response.success(UserResponse.from(signUpUser));
     }
 
     @PostMapping("/login")

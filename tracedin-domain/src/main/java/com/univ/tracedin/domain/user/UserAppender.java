@@ -10,7 +10,7 @@ public class UserAppender {
 
     private final UserRepository userRepository;
 
-    public void append(UserProfile profile, String password) {
-        userRepository.save(User.create(profile, password));
+    public User append(UserProfile profile, String password) {
+        return userRepository.save(User.create(profile, password, UserRole.USER));
     }
 }

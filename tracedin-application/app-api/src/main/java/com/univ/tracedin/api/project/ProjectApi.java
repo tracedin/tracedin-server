@@ -2,7 +2,6 @@ package com.univ.tracedin.api.project;
 
 import java.util.List;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,7 +19,6 @@ import com.univ.tracedin.api.project.dto.AddMemberRequest;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
 import com.univ.tracedin.api.project.dto.NodeResponse;
 import com.univ.tracedin.api.project.dto.ProjectResponse;
-import com.univ.tracedin.domain.auth.UserPrincipal;
 import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.MemberRole;
 import com.univ.tracedin.domain.project.NetworkTopology;
@@ -28,6 +26,7 @@ import com.univ.tracedin.domain.project.ProjectId;
 import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.project.ProjectMemberId;
 import com.univ.tracedin.domain.project.ProjectService;
+import com.univ.tracedin.domain.user.UserId;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,17 +37,15 @@ public class ProjectApi implements ProjectApiDocs {
 
     @PostMapping
     public Response<ProjectKey> createProject(
-            @RequestBody CreateProjectRequest request,
-            @AuthenticationPrincipal UserPrincipal currentUser) {
+            @RequestBody CreateProjectRequest request, Long userId) {
         return Response.success(
-                projectService.create(currentUser.userId(), request.toProjectInfo()));
+                projectService.create(UserId.from(userId), request.toProjectInfo()));
     }
 
     @GetMapping
-    public Response<List<ProjectResponse>> projectList(
-            @AuthenticationPrincipal UserPrincipal currentUser) {
+    public Response<List<ProjectResponse>> projectList(Long userId) {
         List<ProjectResponse> responses =
-                projectService.getProjectList(currentUser.userId()).stream()
+                projectService.getProjectList(UserId.from(userId)).stream()
                         .map(ProjectResponse::from)
                         .toList();
         return Response.success(responses);
