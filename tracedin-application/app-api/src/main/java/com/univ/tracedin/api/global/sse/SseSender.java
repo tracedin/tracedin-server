@@ -27,7 +27,9 @@ public class SseSender implements EventSender {
                                 emitter.send(
                                         SseEmitter.event()
                                                 .id("")
-                                                .name(serviceMetrics.toNode() + METRICS_POSTFIX)
+                                                .name(
+                                                        serviceMetrics.toNode().getName()
+                                                                + METRICS_POSTFIX)
                                                 .data(serviceMetrics.getMetrics()));
                             } catch (IOException e) {
                                 sseEmitterRepository.remove(serviceMetrics.toNode());

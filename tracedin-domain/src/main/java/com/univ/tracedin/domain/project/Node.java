@@ -37,6 +37,6 @@ public class Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getProjectKey(), getName(), getNodeType());
+        return Objects.hash(getProjectKey().value(), getName(), getNodeType());
     }
 }
