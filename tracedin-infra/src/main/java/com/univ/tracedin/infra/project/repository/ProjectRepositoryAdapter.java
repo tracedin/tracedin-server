@@ -94,4 +94,16 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
                 .map(ProjectMemberEntity::toDomain)
                 .toList();
     }
+
+    @Override
+    public void delete(Project project) {
+        projectJpaRepository.delete(ProjectEntity.from(project));
+    }
+
+    @Override
+    public List<ProjectMember> findProjectMembersByProject(Project project) {
+        return projectMemberJpaRepository.findByProjectId(project.getId().getValue()).stream()
+                .map(ProjectMemberEntity::toDomain)
+                .toList();
+    }
 }

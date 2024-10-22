@@ -1,6 +1,8 @@
 package com.univ.tracedin.infra.project.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,6 +36,7 @@ public class ProjectMemberEntity {
 
     private Long memberId;
 
+    @Enumerated(EnumType.STRING)
     private MemberRole role;
 
     public static ProjectMemberEntity from(ProjectMember projectMember) {

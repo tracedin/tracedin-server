@@ -17,6 +17,7 @@ public class ProjectService {
     private final UserReader userReader;
     private final ProjectReader projectReader;
     private final ProjectAppender projectAppender;
+    private final ProjectDeleter projectDeleter;
     private final ProjectMemberManager projectMemberManager;
     private final NetworkTopologyBuilder networkTopologyBuilder;
     private final HitMapReader hitMapReader;
@@ -60,5 +61,11 @@ public class ProjectService {
     public void changeRole(ProjectMemberId projectMemberId, MemberRole role) {
         ProjectMember projectMember = projectMemberManager.read(projectMemberId);
         projectMemberManager.changeRole(projectMember, role);
+    }
+
+    public void deleteProject(ProjectId projectId) {
+        Project project = projectReader.read(projectId);
+        projectMemberManager.removeAll(project);
+        projectDeleter.delete(project);
     }
 }

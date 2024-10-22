@@ -23,4 +23,8 @@ public interface ProjectRepository {
     List<ProjectMember> findProjectMembersByUser(User user);
 
     List<Project> findAllByIds(List<ProjectId> projectIds);
+
+    void delete(Project project);
+
+    List<ProjectMember> findProjectMembersByProject(Project project);
 }

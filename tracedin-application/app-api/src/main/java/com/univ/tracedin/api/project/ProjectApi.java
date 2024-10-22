@@ -51,6 +51,12 @@ public class ProjectApi implements ProjectApiDocs {
         return Response.success(responses);
     }
 
+    @DeleteMapping("/{projectId}")
+    public Response<Void> deleteProject(@PathVariable Long projectId) {
+        projectService.deleteProject(ProjectId.from(projectId));
+        return Response.success();
+    }
+
     @GetMapping("/{projectKey}/service-nodes")
     public Response<List<NodeResponse>> serviceNodes(@PathVariable String projectKey) {
         List<NodeResponse> responses =

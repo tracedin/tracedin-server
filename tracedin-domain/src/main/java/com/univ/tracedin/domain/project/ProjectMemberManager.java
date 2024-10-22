@@ -36,4 +36,12 @@ public class ProjectMemberManager {
     public List<ProjectMember> readAll(User user) {
         return projectRepository.findProjectMembersByUser(user);
     }
+
+    public List<ProjectMember> readAll(Project project) {
+        return projectRepository.findProjectMembersByProject(project);
+    }
+
+    public void removeAll(Project project) {
+        readAll(project).forEach(this::remove);
+    }
 }
