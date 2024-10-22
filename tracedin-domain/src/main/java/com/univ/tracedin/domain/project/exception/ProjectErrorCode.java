@@ -1,5 +1,6 @@
 package com.univ.tracedin.domain.project.exception;
 
+import static com.univ.tracedin.common.constants.TracedInConstants.FORBIDDEN;
 import static com.univ.tracedin.common.constants.TracedInConstants.NOT_FOUND;
 
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import com.univ.tracedin.common.exception.ErrorReason;
 public enum ProjectErrorCode implements BaseErrorCode {
     PROJECT_NOT_FOUND(NOT_FOUND, "PROJECT_404_1", "해당 ID의 프로젝트를 찾지 못했습니다."),
     PROJECT_MEMBER_NOT_FOUND(NOT_FOUND, "PROJECT_MEMBER_404_1", "해당 ID의 프로젝트 멤버를 찾지 못했습니다."),
+    NO_PERMISSION_TO_ACCESS_PROJECT(FORBIDDEN, "PROJECT_403_1", "해당 프로젝트에 접근할 권한이 없습니다."),
     ;
     private final Integer status;
     private final String errorCode;

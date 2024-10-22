@@ -2,5 +2,9 @@ package com.univ.tracedin.domain.project;
 
 public enum MemberRole {
     ADMIN,
-    MEMBER
+    MEMBER;
+
+    public boolean isHigherThan(MemberRole role) {
+        return this.ordinal() < role.ordinal();
+    }
 }

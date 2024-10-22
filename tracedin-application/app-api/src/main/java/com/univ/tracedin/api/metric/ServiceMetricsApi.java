@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.global.sse.SseConnector;
 import com.univ.tracedin.api.metric.dto.AppendServiceMetricsRequest;
 import com.univ.tracedin.api.metric.dto.HttpRequestCountResponse;
+import com.univ.tracedin.domain.auth.UserPrincipal;
 import com.univ.tracedin.domain.metric.ServiceMetricsService;
 import com.univ.tracedin.domain.project.Node;
 import com.univ.tracedin.domain.project.ProjectKey;
@@ -42,9 +44,10 @@ public class ServiceMetricsApi implements ServiceMetricsApiDocs {
     }
 
     @GetMapping("/http-request-count")
-    public Response<List<HttpRequestCountResponse>> getHttpRequestCount(Node node) {
+    public Response<List<HttpRequestCountResponse>> getHttpRequestCount(
+            @AuthenticationPrincipal UserPrincipal currentUser, Node node) {
         List<HttpRequestCountResponse> responses =
-                serviceMetricService.getHttpRequestCount(node).stream()
+                serviceMetricService.getHttpRequestCount(currentUser.userId(), node).stream()
                         .map(HttpRequestCountResponse::from)
                         .toList();
         return Response.success(responses);

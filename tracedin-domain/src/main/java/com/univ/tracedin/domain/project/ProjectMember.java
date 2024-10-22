@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.univ.tracedin.domain.user.User;
 import com.univ.tracedin.domain.user.UserId;
 
 @Getter
@@ -25,5 +26,13 @@ public class ProjectMember {
 
     public void changeRole(MemberRole role) {
         this.role = role;
+    }
+
+    public boolean isMember(User user) {
+        return this.memberId.equals(user.getId());
+    }
+
+    public boolean hasAuthority(MemberRole role) {
+        return this.role.isHigherThan(role);
     }
 }

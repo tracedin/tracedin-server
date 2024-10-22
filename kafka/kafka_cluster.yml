@@ -4,6 +4,7 @@ services:
     hostname: kafka-broker-1
     depends_on:
       - zookeeper
+    restart: always
     ports:
       - "19092:19092"
     environment:
@@ -23,6 +24,7 @@ services:
     depends_on:
       - zookeeper
       - kafka-broker-1
+    restart: always
     ports:
       - "29092:29092"
     environment:
@@ -43,6 +45,7 @@ services:
       - zookeeper
       - kafka-broker-1
       - kafka-broker-2
+    restart: always
     ports:
       - "39092:39092"
     environment:

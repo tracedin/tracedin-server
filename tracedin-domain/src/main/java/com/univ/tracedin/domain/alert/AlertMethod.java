@@ -16,10 +16,14 @@ public class AlertMethod {
     private ProjectId projectId;
     private AlertType alertType;
     private String contact;
-    private boolean isActivated;
+    private AlertMethodStatus status;
 
-    public void deactivate() {
-        this.isActivated = false;
+    public void inactivate() {
+        this.status = AlertMethodStatus.INACTIVE;
+    }
+
+    public void activate() {
+        this.status = AlertMethodStatus.ACTIVE;
     }
 
     public static AlertMethod create(AlertInfo alertInfo) {
@@ -27,12 +31,12 @@ public class AlertMethod {
                 .projectId(alertInfo.projectId())
                 .alertType(alertInfo.alertType())
                 .contact(alertInfo.contact())
-                .isActivated(true)
+                .status(AlertMethodStatus.ACTIVE)
                 .build();
     }
 
-    public void activate() {
-        this.isActivated = true;
+    public boolean isActivated() {
+        return this.status == AlertMethodStatus.ACTIVE;
     }
 
     // TODO : 각 타입별 contact 유효성 검증
