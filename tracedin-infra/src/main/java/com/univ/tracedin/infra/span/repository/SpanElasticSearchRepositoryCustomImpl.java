@@ -13,14 +13,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.common.dto.SearchResult;
-import com.univ.tracedin.domain.project.EndTimeBucket;
-import com.univ.tracedin.domain.project.ResponseTimeBucket;
-import com.univ.tracedin.domain.span.HitMapCondition;
+import com.univ.tracedin.domain.project.StatusCodeDistribution.StatusCodeBucket;
+import com.univ.tracedin.domain.project.TraceHipMap.EndTimeBucket;
+import com.univ.tracedin.domain.project.TraceHipMap.ResponseTimeBucket;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
 import com.univ.tracedin.domain.span.TraceId;
-import com.univ.tracedin.domain.span.TraceSearchCond;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -35,6 +35,7 @@ import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramAggrega
 import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.HistogramAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.HistogramBucket;
+import co.elastic.clients.elasticsearch._types.aggregations.NestedAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.StringTermsBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.TopHitsAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
@@ -105,8 +106,8 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     }
 
     @Override
-    public SearchResult<Trace> findTracesByNode(
-            TraceSearchCond cond, int size, Map<String, Object> afterKey) {
+    public SearchResult<Trace> searchTracesByNode(
+            TraceSearchCondition cond, int size, Map<String, Object> afterKey) {
         return executeESQuery(
                 () -> {
                     SearchResponse<Void> response =
@@ -154,10 +155,7 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     }
 
     @Override
-    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, HitMapCondition cond) {
-        Query query = rootSpanQuery(projectKey, cond);
-        Aggregation aggregation = histogramAggregation();
-
+    public List<EndTimeBucket> getTraceHitMapByProjectKey(TraceSearchCondition cond) {
         return executeESQuery(
                 () -> {
                     SearchResponse<Void> response =
@@ -165,12 +163,80 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                     s ->
                                             s.index(INDEX_NAME)
                                                     .size(0)
-                                                    .query(query)
-                                                    .aggregations("by_end_time", aggregation),
+                                                    .query(createServiceSpanQuery(cond))
+                                                    .aggregations(
+                                                            "by_end_time", histogramAggregation()),
                                     Void.class);
 
                     return parseHistogramResponse(response);
                 });
+    }
+
+    @Override
+    public List<StatusCodeBucket> getStatusCodeDistribution(TraceSearchCondition cond) {
+        return executeESQuery(
+                () -> {
+                    SearchResponse<Void> response =
+                            client.search(
+                                    s ->
+                                            s.index(INDEX_NAME)
+                                                    .size(0)
+                                                    .query(createServiceSpanQuery(cond))
+                                                    .aggregations(
+                                                            "nested_attributes",
+                                                            statusCodeDistributionAggregation()),
+                                    Void.class);
+                    return parseStatusCodeDistributionResponse(response);
+                });
+    }
+
+    private Aggregation statusCodeDistributionAggregation() {
+        return Aggregation.of(
+                a ->
+                        a.nested(n -> n.path("attributes"))
+                                .aggregations(
+                                        Map.of(
+                                                "status_code_distribution",
+                                                Aggregation.of(
+                                                        agg ->
+                                                                agg.terms(
+                                                                        st ->
+                                                                                st.script(
+                                                                                                s ->
+                                                                                                        s
+                                                                                                                .inline(
+                                                                                                                        i ->
+                                                                                                                                i.source(
+                                                                                                                                                "int statusCodeGroup = (int)(doc['attributes.data.http.status_code'].value / 100); return statusCodeGroup + 'xx';")
+                                                                                                                                        .lang(
+                                                                                                                                                "painless")))
+                                                                                        .size(
+                                                                                                10))))));
+    }
+
+    private List<StatusCodeBucket> parseStatusCodeDistributionResponse(
+            SearchResponse<Void> response) {
+        List<StatusCodeBucket> statusCodeBuckets = new ArrayList<>();
+
+        // 어그리게이션 이름을 통해 결과 추출
+        NestedAggregate nestedAttributes =
+                response.aggregations().get("nested_attributes").nested();
+
+        nestedAttributes
+                .aggregations()
+                .get("status_code_distribution")
+                .sterms()
+                .buckets()
+                .array()
+                .forEach(
+                        bucket -> {
+                            String statusCode = bucket.key().stringValue();
+                            long count = bucket.docCount();
+                            StatusCodeBucket statusCodeBucket =
+                                    StatusCodeBucket.of(statusCode, count);
+                            statusCodeBuckets.add(statusCodeBucket);
+                        });
+        return statusCodeBuckets;
     }
 
     private List<EndTimeBucket> parseHistogramResponse(SearchResponse<Void> response) {
@@ -245,26 +311,6 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                         .fixedInterval(Time.of(t -> t.time("5m")))
                                                         .minDocCount(1))
                                 .aggregations(Map.of("attributes_nested", attributesNestedAgg)));
-    }
-
-    private Query rootSpanQuery(String projectKey, HitMapCondition cond) {
-
-        Builder bool = QueryBuilders.bool();
-
-        if (cond.hasServiceName()) {
-            bool.must(QueryBuilders.term(t -> t.field("serviceName").value(cond.serviceName())));
-
-            if (cond.hasEndPointUrl()) {
-                bool.must(nestedHttpUrlTermQuery(cond.endPointUrl()));
-            }
-        }
-
-        return bool.must(
-                        QueryBuilders.term(t -> t.field("projectKey").value(projectKey)),
-                        QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
-                        QueryBuilders.term(t -> t.field("kind").value("SERVER")))
-                .build()
-                ._toQuery();
     }
 
     private Query nestedHttpUrlTermQuery(String endPointUrl) {
@@ -367,7 +413,7 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                                                                                                                         "attributes.data.anomaly")))))));
     }
 
-    private Query createServiceSpanQuery(TraceSearchCond cond) {
+    private Query createServiceSpanQuery(TraceSearchCondition cond) {
         Builder bool = QueryBuilders.bool();
 
         if (cond.hasServiceName()) {

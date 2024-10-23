@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class SpanService {
         spanMessagePublisher.publish(SpanCollectedEvent.from(spans));
     }
 
-    public SearchResult<Trace> getTraces(TraceSearchCond cond, SearchCursor cursor) {
+    public SearchResult<Trace> getTraces(TraceSearchCondition cond, SearchCursor cursor) {
         conditionValidator.validate(cond);
         return spanReader.read(cond, cursor);
     }

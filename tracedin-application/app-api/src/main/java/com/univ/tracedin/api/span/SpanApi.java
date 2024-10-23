@@ -13,9 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.span.dto.AppendSpanRequest;
-import com.univ.tracedin.api.span.dto.ReadTraceRequest;
 import com.univ.tracedin.api.span.dto.SpanTreeResponse;
 import com.univ.tracedin.api.span.dto.TraceResponse;
+import com.univ.tracedin.api.span.dto.TraceSearchRequest;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.span.SpanService;
@@ -37,9 +37,9 @@ public class SpanApi implements SpanApiDocs {
 
     @GetMapping("/traces")
     public Response<SearchResult<TraceResponse>> searchTraces(
-            ReadTraceRequest request, SearchCursor cursor) {
+            TraceSearchRequest request, SearchCursor cursor) {
         SearchResult<TraceResponse> responses =
-                spanService.getTraces(request.toSearchCond(), cursor).map(TraceResponse::from);
+                spanService.getTraces(request.toCondition(), cursor).map(TraceResponse::from);
         return Response.success(responses);
     }
 

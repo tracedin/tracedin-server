@@ -4,23 +4,27 @@ import java.util.List;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
-import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.ProjectKey;
+import com.univ.tracedin.domain.project.StatusCodeDistribution;
+import com.univ.tracedin.domain.project.TraceHipMap;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 
 public interface SpanRepository {
 
     void saveAll(List<Span> spans);
+
+    void save(Span span);
 
     Span findById(SpanId id);
 
     List<Span> findByProjectKeyAndSpanKind(
             ProjectKey projectKey, SpanType spanType, SpanKind spanKind);
 
-    SearchResult<Trace> findTracesByNode(TraceSearchCond cond, SearchCursor cursor);
+    SearchResult<Trace> findTracesByNode(TraceSearchCondition cond, SearchCursor cursor);
 
     List<Span> findByTraceId(TraceId traceId);
 
-    List<EndTimeBucket> getTraceHitMapByProjectKey(ProjectKey projectKey, HitMapCondition cond);
+    TraceHipMap getTraceHitMapByProjectKey(TraceSearchCondition cond);
 
-    void save(Span span);
+    StatusCodeDistribution getStatusCodeDistribution(TraceSearchCondition cond);
 }

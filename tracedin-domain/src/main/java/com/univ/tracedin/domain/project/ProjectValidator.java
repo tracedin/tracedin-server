@@ -10,5 +10,11 @@ import com.univ.tracedin.domain.user.User;
 @RequiredArgsConstructor
 public class ProjectValidator {
 
+    private final ProjectReader projectReader;
+
     public void validate(Project project, User user) {}
+
+    public void validate(ProjectKey project) {
+        projectReader.readByKey(project); // 없은 프로젝트의 경우 예외
+    }
 }

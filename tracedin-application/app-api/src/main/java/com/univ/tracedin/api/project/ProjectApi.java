@@ -16,16 +16,17 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.project.dto.AddMemberRequest;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
-import com.univ.tracedin.api.project.dto.HitMapRequest;
 import com.univ.tracedin.api.project.dto.NodeResponse;
 import com.univ.tracedin.api.project.dto.ProjectResponse;
-import com.univ.tracedin.domain.project.EndTimeBucket;
+import com.univ.tracedin.api.span.dto.TraceSearchRequest;
 import com.univ.tracedin.domain.project.MemberRole;
 import com.univ.tracedin.domain.project.NetworkTopology;
 import com.univ.tracedin.domain.project.ProjectId;
 import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.project.ProjectMemberId;
 import com.univ.tracedin.domain.project.ProjectService;
+import com.univ.tracedin.domain.project.StatusCodeDistribution;
+import com.univ.tracedin.domain.project.TraceHipMap;
 import com.univ.tracedin.domain.user.UserId;
 
 @RestController
@@ -71,11 +72,14 @@ public class ProjectApi implements ProjectApiDocs {
         return Response.success(projectService.getNetworkTopology(ProjectKey.from(projectKey)));
     }
 
-    @GetMapping("/{projectKey}/hit-map")
-    public Response<List<EndTimeBucket>> hitMap(
-            @PathVariable String projectKey, HitMapRequest request) {
-        return Response.success(
-                projectService.getTraceHitMap(ProjectKey.from(projectKey), request.toCondition()));
+    @GetMapping("/hit-map")
+    public Response<TraceHipMap> hitMap(TraceSearchRequest request) {
+        return Response.success(projectService.getTraceHitMap(request.toCondition()));
+    }
+
+    @GetMapping("/status-code-distribution")
+    public Response<StatusCodeDistribution> statusCodeDistribution(TraceSearchRequest request) {
+        return Response.success(projectService.getStatusCodeDistribution(request.toCondition()));
     }
 
     @PostMapping("/{projectId}/members")
@@ -96,6 +100,4 @@ public class ProjectApi implements ProjectApiDocs {
         projectService.changeRole(ProjectMemberId.from(projectMemberId), targetRole);
         return Response.success();
     }
-
-    // TODO : 상태 코드 분포 조회 API
 }

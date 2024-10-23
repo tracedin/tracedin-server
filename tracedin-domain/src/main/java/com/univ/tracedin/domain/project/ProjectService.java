@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.span.HitMapCondition;
 import com.univ.tracedin.domain.user.User;
 import com.univ.tracedin.domain.user.UserId;
 import com.univ.tracedin.domain.user.UserReader;
@@ -19,8 +18,10 @@ public class ProjectService {
     private final ProjectReader projectReader;
     private final ProjectAppender projectAppender;
     private final ProjectDeleter projectDeleter;
+    private final ProjectValidator projectValidator;
     private final ProjectMemberManager projectMemberManager;
     private final NetworkTopologyBuilder networkTopologyBuilder;
+    private final StatusCodeDistributionReader statusCodeDistributionReader;
     private final HitMapReader hitMapReader;
 
     public ProjectKey create(UserId creatorId, ProjectInfo projectInfo) {
@@ -43,9 +44,14 @@ public class ProjectService {
         return networkTopologyBuilder.build(project);
     }
 
-    public List<EndTimeBucket> getTraceHitMap(ProjectKey projectKey, HitMapCondition cond) {
-        Project project = projectReader.readByKey(projectKey);
-        return hitMapReader.read(project, cond);
+    public TraceHipMap getTraceHitMap(TraceSearchCondition cond) {
+        projectValidator.validate(cond.projectKey());
+        return hitMapReader.read(cond);
+    }
+
+    public StatusCodeDistribution getStatusCodeDistribution(TraceSearchCondition cond) {
+        projectValidator.validate(cond.projectKey());
+        return statusCodeDistributionReader.read(cond);
     }
 
     public void addMember(ProjectId projectId, String targetMemberEmail, MemberRole role) {

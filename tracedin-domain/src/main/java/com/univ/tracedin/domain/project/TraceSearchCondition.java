@@ -1,13 +1,11 @@
-package com.univ.tracedin.domain.span;
+package com.univ.tracedin.domain.project;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import com.univ.tracedin.domain.project.ProjectKey;
-
 import io.micrometer.common.util.StringUtils;
 
-public record TraceSearchCond(
+public record TraceSearchCondition(
         ProjectKey projectKey,
         String serviceName,
         String endPointUrl,

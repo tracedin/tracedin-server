@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.project.ProjectKey;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class SpanReader {
         return spanRepository.findByProjectKeyAndSpanKind(projectKey, spanType, spanKind);
     }
 
-    public SearchResult<Trace> read(TraceSearchCond cond, SearchCursor cursor) {
+    public SearchResult<Trace> read(TraceSearchCondition cond, SearchCursor cursor) {
         return spanRepository.findTracesByNode(cond, cursor);
     }
 

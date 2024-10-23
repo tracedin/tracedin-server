@@ -4,12 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.univ.tracedin.common.dto.SearchResult;
-import com.univ.tracedin.domain.project.EndTimeBucket;
-import com.univ.tracedin.domain.span.HitMapCondition;
+import com.univ.tracedin.domain.project.StatusCodeDistribution.StatusCodeBucket;
+import com.univ.tracedin.domain.project.TraceHipMap.EndTimeBucket;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
-import com.univ.tracedin.domain.span.TraceSearchCond;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 
 public interface SpanElasticSearchRepositoryCustom {
@@ -18,10 +18,12 @@ public interface SpanElasticSearchRepositoryCustom {
 
     List<String> findServiceNames(String projectKey);
 
-    SearchResult<Trace> findTracesByNode(
-            TraceSearchCond cond, int size, Map<String, Object> afterKey);
+    SearchResult<Trace> searchTracesByNode(
+            TraceSearchCondition cond, int size, Map<String, Object> afterKey);
 
     List<SpanDocument> findByTraceId(String traceId);
 
-    List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, HitMapCondition cond);
+    List<EndTimeBucket> getTraceHitMapByProjectKey(TraceSearchCondition cond);
+
+    List<StatusCodeBucket> getStatusCodeDistribution(TraceSearchCondition cond);
 }

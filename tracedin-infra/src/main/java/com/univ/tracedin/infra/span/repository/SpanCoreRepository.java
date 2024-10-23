@@ -9,9 +9,12 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
-import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.ProjectKey;
-import com.univ.tracedin.domain.span.HitMapCondition;
+import com.univ.tracedin.domain.project.StatusCodeDistribution;
+import com.univ.tracedin.domain.project.StatusCodeDistribution.StatusCodeBucket;
+import com.univ.tracedin.domain.project.TraceHipMap;
+import com.univ.tracedin.domain.project.TraceHipMap.EndTimeBucket;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
@@ -19,7 +22,6 @@ import com.univ.tracedin.domain.span.SpanRepository;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
 import com.univ.tracedin.domain.span.TraceId;
-import com.univ.tracedin.domain.span.TraceSearchCond;
 import com.univ.tracedin.infra.span.document.SpanDocument;
 
 @Transactional
@@ -56,8 +58,9 @@ public class SpanCoreRepository implements SpanRepository {
     }
 
     @Override
-    public SearchResult<Trace> findTracesByNode(TraceSearchCond cond, SearchCursor cursor) {
-        return spanElasticSearchRepository.findTracesByNode(cond, cursor.size(), cursor.afterKey());
+    public SearchResult<Trace> findTracesByNode(TraceSearchCondition cond, SearchCursor cursor) {
+        return spanElasticSearchRepository.searchTracesByNode(
+                cond, cursor.size(), cursor.afterKey());
     }
 
     @Override
@@ -68,8 +71,17 @@ public class SpanCoreRepository implements SpanRepository {
     }
 
     @Override
-    public List<EndTimeBucket> getTraceHitMapByProjectKey(
-            ProjectKey projectKey, HitMapCondition cond) {
-        return spanElasticSearchRepository.getTraceHitMapByProjectKey(projectKey.value(), cond);
+    public TraceHipMap getTraceHitMapByProjectKey(TraceSearchCondition cond) {
+        List<EndTimeBucket> traceHitMapByProjectKey =
+                spanElasticSearchRepository.getTraceHitMapByProjectKey(cond);
+        return TraceHipMap.from(traceHitMapByProjectKey);
+    }
+
+    @Override
+    public StatusCodeDistribution getStatusCodeDistribution(TraceSearchCondition cond) {
+        List<StatusCodeBucket> statusCodeDistribution =
+                spanElasticSearchRepository.getStatusCodeDistribution(cond);
+
+        return StatusCodeDistribution.from(statusCodeDistribution);
     }
 }

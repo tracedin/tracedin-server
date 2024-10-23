@@ -3,17 +3,17 @@ package com.univ.tracedin.api.span.dto;
 import java.time.LocalDateTime;
 
 import com.univ.tracedin.domain.project.ProjectKey;
-import com.univ.tracedin.domain.span.TraceSearchCond;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 
-public record ReadTraceRequest(
+public record TraceSearchRequest(
         String projectKey,
         String serviceName,
         String endPointUrl,
         LocalDateTime startTime,
         LocalDateTime endTime) {
 
-    public TraceSearchCond toSearchCond() {
-        return new TraceSearchCond(
+    public TraceSearchCondition toCondition() {
+        return new TraceSearchCondition(
                 new ProjectKey(projectKey), serviceName, endPointUrl, startTime, endTime);
     }
 }
