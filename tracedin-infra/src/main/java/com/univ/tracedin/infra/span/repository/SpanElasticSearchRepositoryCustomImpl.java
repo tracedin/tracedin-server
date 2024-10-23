@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.HttpTps;
 import com.univ.tracedin.domain.project.StatusCodeDistribution.StatusCodeBucket;
 import com.univ.tracedin.domain.project.TraceHipMap.EndTimeBucket;
 import com.univ.tracedin.domain.project.TraceHipMap.ResponseTimeBucket;
@@ -188,6 +189,72 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                     Void.class);
                     return parseStatusCodeDistributionResponse(response);
                 });
+    }
+
+    @Override
+    public List<HttpTps> getHttpTps(TraceSearchCondition cond) {
+        return executeESQuery(
+                () -> {
+                    SearchResponse<Void> response =
+                            client.search(
+                                    s ->
+                                            s.index(INDEX_NAME)
+                                                    .size(0)
+                                                    .query(createServiceSpanQuery(cond))
+                                                    .aggregations("http_tps", httpTpsHistogram()),
+                                    Void.class);
+
+                    return parseHttpTpsResponse(response);
+                });
+    }
+
+    private Aggregation httpTpsHistogram() {
+        return Aggregation.of(
+                agg ->
+                        agg.dateHistogram(
+                                        dh ->
+                                                dh.field("startEpochMillis")
+                                                        .fixedInterval(Time.of(t -> t.time("10m")))
+                                                        .minDocCount(1))
+                                .aggregations(
+                                        Map.of(
+                                                "tps",
+                                                Aggregation.of(
+                                                        a ->
+                                                                a.bucketScript(
+                                                                        bs ->
+                                                                                bs.bucketsPath(
+                                                                                                bp ->
+                                                                                                        bp
+                                                                                                                .dict(
+                                                                                                                        Map
+                                                                                                                                .of(
+                                                                                                                                        "count",
+                                                                                                                                        "_count")))
+                                                                                        .script(
+                                                                                                s ->
+                                                                                                        s
+                                                                                                                .inline(
+                                                                                                                        i ->
+                                                                                                                                i
+                                                                                                                                        .source(
+                                                                                                                                                "params.count / 600"))))))));
+    }
+
+    private List<HttpTps> parseHttpTpsResponse(SearchResponse<Void> response) {
+        List<HttpTps> httpTpsList = new ArrayList<>();
+        response.aggregations()
+                .get("http_tps")
+                .dateHistogram()
+                .buckets()
+                .array()
+                .forEach(
+                        bucket -> {
+                            long startEpochMillis = bucket.key();
+                            double tps = bucket.aggregations().get("tps").simpleValue().value();
+                            httpTpsList.add(HttpTps.of(startEpochMillis, tps));
+                        });
+        return httpTpsList;
     }
 
     private Aggregation statusCodeDistributionAggregation() {

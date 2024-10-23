@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.HttpTps;
 import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.project.StatusCodeDistribution;
 import com.univ.tracedin.domain.project.StatusCodeDistribution.StatusCodeBucket;
@@ -71,7 +72,7 @@ public class SpanCoreRepository implements SpanRepository {
     }
 
     @Override
-    public TraceHipMap getTraceHitMapByProjectKey(TraceSearchCondition cond) {
+    public TraceHipMap getTraceHitMap(TraceSearchCondition cond) {
         List<EndTimeBucket> traceHitMapByProjectKey =
                 spanElasticSearchRepository.getTraceHitMapByProjectKey(cond);
         return TraceHipMap.from(traceHitMapByProjectKey);
@@ -83,5 +84,10 @@ public class SpanCoreRepository implements SpanRepository {
                 spanElasticSearchRepository.getStatusCodeDistribution(cond);
 
         return StatusCodeDistribution.from(statusCodeDistribution);
+    }
+
+    @Override
+    public List<HttpTps> getHttpTps(TraceSearchCondition cond) {
+        return spanElasticSearchRepository.getHttpTps(cond);
     }
 }

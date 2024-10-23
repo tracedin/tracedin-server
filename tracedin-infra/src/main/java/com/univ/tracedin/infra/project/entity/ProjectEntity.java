@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import com.univ.tracedin.domain.project.Project;
 import com.univ.tracedin.domain.project.ProjectId;
+import com.univ.tracedin.domain.project.ProjectInfo;
 import com.univ.tracedin.domain.project.ProjectKey;
 
 @Entity
@@ -38,8 +39,8 @@ public class ProjectEntity {
         Long id = (project.getId() == null) ? null : project.getId().getValue();
         return ProjectEntity.builder()
                 .id(id)
-                .name(project.getName())
-                .description(project.getDescription())
+                .name(project.getInfo().projectName())
+                .description(project.getInfo().description())
                 .projectKey(project.getProjectKey().value())
                 .build();
     }
@@ -47,8 +48,7 @@ public class ProjectEntity {
     public Project toDomain() {
         return Project.builder()
                 .id(ProjectId.from(id))
-                .name(name)
-                .description(description)
+                .info(ProjectInfo.of(name, description))
                 .projectKey(ProjectKey.from(projectKey))
                 .build();
     }

@@ -8,7 +8,7 @@ public interface ProjectRepository {
 
     Project save(Project project);
 
-    List<Node> findServiceNodeList(ProjectKey projectKey);
+    List<NetworkTopology.Node> findServiceNodeList(ProjectKey projectKey);
 
     Project findByKey(ProjectKey projectKey);
 
@@ -27,4 +27,6 @@ public interface ProjectRepository {
     void delete(Project project);
 
     List<ProjectMember> findProjectMembersByProject(Project project);
+
+    boolean existsByKey(ProjectKey projectKey);
 }

@@ -15,7 +15,6 @@ import com.univ.tracedin.domain.project.TraceSearchCondition;
 public class SpanService {
 
     private final SpanReader spanReader;
-    private final ConditionValidator conditionValidator;
     private final SpanMessagePublisher spanMessagePublisher;
 
     public void publishSpans(List<Span> spans) {
@@ -23,7 +22,6 @@ public class SpanService {
     }
 
     public SearchResult<Trace> getTraces(TraceSearchCondition cond, SearchCursor cursor) {
-        conditionValidator.validate(cond);
         return spanReader.read(cond, cursor);
     }
 

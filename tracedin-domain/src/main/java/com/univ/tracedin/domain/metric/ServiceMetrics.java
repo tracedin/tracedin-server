@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.univ.tracedin.domain.project.Node;
+import com.univ.tracedin.domain.project.NetworkTopology.Node;
 import com.univ.tracedin.domain.project.ProjectKey;
 
 @Getter

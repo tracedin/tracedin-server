@@ -8,10 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.metric.HttpRequestCount;
 import com.univ.tracedin.domain.metric.ServiceMetrics;
 import com.univ.tracedin.domain.metric.ServiceMetricsRepository;
-import com.univ.tracedin.domain.project.Node;
 import com.univ.tracedin.infra.metric.document.ServiceMetricsDocument;
 
 @Repository
@@ -25,11 +23,5 @@ public class ServiceMetricsCoreRepository implements ServiceMetricsRepository {
         List<ServiceMetricsDocument> documents =
                 metrics.stream().map(ServiceMetricsDocument::from).toList();
         serviceMetricsElasticSearchRepository.saveAll(documents);
-    }
-
-    @Override
-    public List<HttpRequestCount> getHttpRequestCount(Node node) {
-        return serviceMetricsElasticSearchRepository.getHttpRequestCount(
-                node.getProjectKey().value(), node.getName());
     }
 }

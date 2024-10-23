@@ -14,16 +14,13 @@ public class Project {
 
     private ProjectId id;
 
-    private String name;
-
-    private String description;
+    private ProjectInfo info;
 
     private ProjectKey projectKey;
 
     public static Project create(ProjectInfo projectInfo) {
         return Project.builder()
-                .name(projectInfo.projectName())
-                .description(projectInfo.description())
+                .info(projectInfo)
                 .projectKey(ProjectKey.create(projectInfo))
                 .build();
     }

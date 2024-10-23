@@ -11,6 +11,7 @@ import com.univ.tracedin.common.exception.ErrorReason;
 public enum ProjectErrorCode implements BaseErrorCode {
     PROJECT_NOT_FOUND(NOT_FOUND, "PROJECT_404_1", "해당 ID의 프로젝트를 찾지 못했습니다."),
     PROJECT_MEMBER_NOT_FOUND(NOT_FOUND, "PROJECT_MEMBER_404_1", "해당 ID의 프로젝트 멤버를 찾지 못했습니다."),
+    PROJECT_KEY_NOT_FOUND(NOT_FOUND, "PROJECT_KEY_404_1", "해당 키의 프로젝트를 찾지 못했습니다."),
     ;
     private final Integer status;
     private final String errorCode;

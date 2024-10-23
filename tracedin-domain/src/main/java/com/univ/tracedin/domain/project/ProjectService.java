@@ -1,5 +1,9 @@
 package com.univ.tracedin.domain.project;
 
+import static com.univ.tracedin.domain.project.NetworkTopology.*;
+import static com.univ.tracedin.domain.project.ProjectMember.*;
+import static com.univ.tracedin.domain.project.ProjectStatistic.*;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -21,8 +25,7 @@ public class ProjectService {
     private final ProjectValidator projectValidator;
     private final ProjectMemberManager projectMemberManager;
     private final NetworkTopologyBuilder networkTopologyBuilder;
-    private final StatusCodeDistributionReader statusCodeDistributionReader;
-    private final HitMapReader hitMapReader;
+    private final ProjectAnalyzer projectAnalyzer;
 
     public ProjectKey create(UserId creatorId, ProjectInfo projectInfo) {
         User user = userReader.read(creatorId);
@@ -44,14 +47,10 @@ public class ProjectService {
         return networkTopologyBuilder.build(project);
     }
 
-    public TraceHipMap getTraceHitMap(TraceSearchCondition cond) {
+    public ProjectStatistic<?> getStatistics(
+            TraceSearchCondition cond, StatisticsType statisticsType) {
         projectValidator.validate(cond.projectKey());
-        return hitMapReader.read(cond);
-    }
-
-    public StatusCodeDistribution getStatusCodeDistribution(TraceSearchCondition cond) {
-        projectValidator.validate(cond.projectKey());
-        return statusCodeDistributionReader.read(cond);
+        return projectAnalyzer.analyze(cond, statisticsType);
     }
 
     public void addMember(ProjectId projectId, String targetMemberEmail, MemberRole role) {

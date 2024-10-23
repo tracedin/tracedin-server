@@ -14,8 +14,11 @@ public interface ProjectJpaRepository extends JpaRepository<ProjectEntity, Long>
 
     @Query(
             """
-            select p from ProjectEntity p
-            where p.id in :ids
-            """)
+                    select p from ProjectEntity p
+                    where p.id in :ids
+                    """)
     List<ProjectEntity> findAllInIds(List<Long> ids);
+
+    @Query("select exists (select 1 from ProjectEntity p where p.projectKey = :projectKey)")
+    boolean existsByProjectKey(String projectKey);
 }

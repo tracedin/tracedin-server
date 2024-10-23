@@ -7,8 +7,8 @@ public record ProjectResponse(Long id, String name, String description, String p
     public static ProjectResponse from(Project project) {
         return new ProjectResponse(
                 project.getId().getValue(),
-                project.getName(),
-                project.getDescription(),
+                project.getInfo().projectName(),
+                project.getInfo().description(),
                 project.getProjectKey().value());
     }
 }

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.user.User;
+import com.univ.tracedin.domain.project.exception.InvalidProjectKeyException;
 
 @Component
 @RequiredArgsConstructor
@@ -12,9 +12,9 @@ public class ProjectValidator {
 
     private final ProjectReader projectReader;
 
-    public void validate(Project project, User user) {}
-
-    public void validate(ProjectKey project) {
-        projectReader.readByKey(project); // 없은 프로젝트의 경우 예외
+    public void validate(ProjectKey projectKey) {
+        if (!projectReader.exists(projectKey)) {
+            throw InvalidProjectKeyException.EXCEPTION;
+        }
     }
 }

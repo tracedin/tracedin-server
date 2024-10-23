@@ -14,7 +14,7 @@ public class ProjectMemberManager {
 
     private final ProjectRepository projectRepository;
 
-    public void add(Project project, User targetMember, MemberRole role) {
+    public void add(Project project, User targetMember, ProjectMember.MemberRole role) {
         ProjectMember projectMember =
                 ProjectMember.create(project.getId(), targetMember.getId(), role);
         projectRepository.saveProjectMember(projectMember);
@@ -28,7 +28,7 @@ public class ProjectMemberManager {
         projectRepository.deleteProjectMember(projectMember);
     }
 
-    public void changeRole(ProjectMember projectMember, MemberRole role) {
+    public void changeRole(ProjectMember projectMember, ProjectMember.MemberRole role) {
         projectMember.changeRole(role);
         projectRepository.saveProjectMember(projectMember);
     }

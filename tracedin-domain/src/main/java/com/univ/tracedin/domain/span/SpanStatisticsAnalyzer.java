@@ -1,6 +1,8 @@
 package com.univ.tracedin.domain.span;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -8,14 +10,40 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.project.*;
+import com.univ.tracedin.domain.project.NetworkTopology;
+import com.univ.tracedin.domain.project.NetworkTopology.Edge;
+import com.univ.tracedin.domain.project.NetworkTopology.Node;
+import com.univ.tracedin.domain.project.NetworkTopology.NodeType;
+import com.univ.tracedin.domain.project.NetworkTopologyBuilder;
+import com.univ.tracedin.domain.project.Project;
+import com.univ.tracedin.domain.project.ProjectAnalyzer;
+import com.univ.tracedin.domain.project.ProjectKey;
+import com.univ.tracedin.domain.project.ProjectStatistic;
+import com.univ.tracedin.domain.project.ProjectStatistic.StatisticsType;
+import com.univ.tracedin.domain.project.TraceSearchCondition;
 
 @Component
 @RequiredArgsConstructor
-public class NetworkTopologyBuilderImpl implements NetworkTopologyBuilder {
+public class SpanStatisticsAnalyzer implements ProjectAnalyzer, NetworkTopologyBuilder {
 
     private static final String KAFKA_NODE_NAME = "KAFKA";
     private final SpanReader spanReader;
+    private final SpanRepository spanRepository;
+
+    @Override
+    public ProjectStatistic<?> analyze(TraceSearchCondition cond, StatisticsType statisticsType) {
+        return switch (statisticsType) {
+            case HTTP_TPS ->
+                    ProjectStatistic.of(spanRepository.getHttpTps(cond), StatisticsType.HTTP_TPS);
+            case TRACE_HIT_MAP ->
+                    ProjectStatistic.of(
+                            spanRepository.getTraceHitMap(cond), StatisticsType.TRACE_HIT_MAP);
+            case STATUS_CODE ->
+                    ProjectStatistic.of(
+                            spanRepository.getStatusCodeDistribution(cond),
+                            StatisticsType.STATUS_CODE);
+        };
+    }
 
     @Override
     public NetworkTopology build(Project project) {

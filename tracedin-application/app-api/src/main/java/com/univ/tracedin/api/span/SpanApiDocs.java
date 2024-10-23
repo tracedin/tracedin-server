@@ -3,10 +3,10 @@ package com.univ.tracedin.api.span;
 import java.util.List;
 
 import com.univ.tracedin.api.global.dto.Response;
+import com.univ.tracedin.api.project.dto.TraceSearchRequest;
 import com.univ.tracedin.api.span.dto.AppendSpanRequest;
 import com.univ.tracedin.api.span.dto.SpanTreeResponse;
 import com.univ.tracedin.api.span.dto.TraceResponse;
-import com.univ.tracedin.api.span.dto.TraceSearchRequest;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 

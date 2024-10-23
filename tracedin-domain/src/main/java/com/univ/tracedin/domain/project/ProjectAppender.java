@@ -16,7 +16,7 @@ public class ProjectAppender {
     public ProjectKey append(User user, ProjectInfo projectInfo) {
         Project project = Project.create(projectInfo);
         Project saved = projectRepository.save(project);
-        projectMemberManager.add(saved, user, MemberRole.ADMIN);
+        projectMemberManager.add(saved, user, ProjectMember.MemberRole.ADMIN);
         return project.getProjectKey();
     }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.project.HttpTps;
 import com.univ.tracedin.domain.project.ProjectKey;
 import com.univ.tracedin.domain.project.StatusCodeDistribution;
 import com.univ.tracedin.domain.project.TraceHipMap;
@@ -24,7 +25,9 @@ public interface SpanRepository {
 
     List<Span> findByTraceId(TraceId traceId);
 
-    TraceHipMap getTraceHitMapByProjectKey(TraceSearchCondition cond);
+    TraceHipMap getTraceHitMap(TraceSearchCondition cond);
 
     StatusCodeDistribution getStatusCodeDistribution(TraceSearchCondition cond);
+
+    List<HttpTps> getHttpTps(TraceSearchCondition cond);
 }

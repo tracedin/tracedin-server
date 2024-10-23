@@ -14,9 +14,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import com.univ.tracedin.domain.project.MemberRole;
 import com.univ.tracedin.domain.project.ProjectId;
 import com.univ.tracedin.domain.project.ProjectMember;
+import com.univ.tracedin.domain.project.ProjectMember.MemberRole;
 import com.univ.tracedin.domain.project.ProjectMemberId;
 import com.univ.tracedin.domain.user.UserId;
 

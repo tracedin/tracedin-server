@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
 
-import com.univ.tracedin.domain.project.Node;
-import com.univ.tracedin.domain.project.NodeType;
+import com.univ.tracedin.domain.project.NetworkTopology.Node;
+import com.univ.tracedin.domain.project.NetworkTopology.NodeType;
 import com.univ.tracedin.domain.project.Project;
 import com.univ.tracedin.domain.project.ProjectId;
 import com.univ.tracedin.domain.project.ProjectKey;
@@ -59,6 +59,11 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
                 .findByProjectKey(projectKey.value())
                 .map(ProjectEntity::toDomain)
                 .orElseThrow(() -> ProjectNotFoundException.EXCEPTION);
+    }
+
+    @Override
+    public boolean existsByKey(ProjectKey projectKey) {
+        return projectJpaRepository.existsByProjectKey(projectKey.value());
     }
 
     @Override
