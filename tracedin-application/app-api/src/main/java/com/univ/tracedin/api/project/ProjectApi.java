@@ -71,7 +71,6 @@ public class ProjectApi implements ProjectApiDocs {
         return Response.success(projectService.getNetworkTopology(ProjectKey.from(projectKey)));
     }
 
-    // TODO : 엔드 포엔트 파라미터 추가
     @GetMapping("/{projectKey}/hit-map")
     public Response<List<EndTimeBucket>> hitMap(
             @PathVariable String projectKey, HitMapRequest request) {

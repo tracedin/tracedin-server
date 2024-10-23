@@ -44,7 +44,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
-import io.micrometer.common.util.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -252,10 +251,10 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
 
         Builder bool = QueryBuilders.bool();
 
-        if (StringUtils.isNotBlank(cond.serviceName())) {
+        if (cond.hasServiceName()) {
             bool.must(QueryBuilders.term(t -> t.field("serviceName").value(cond.serviceName())));
 
-            if (StringUtils.isNotBlank(cond.endPointUrl())) {
+            if (cond.hasEndPointUrl()) {
                 bool.must(nestedHttpUrlTermQuery(cond.endPointUrl()));
             }
         }
@@ -371,29 +370,30 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     private Query createServiceSpanQuery(TraceSearchCond cond) {
         Builder bool = QueryBuilders.bool();
 
-        bool.must(
-                QueryBuilders.term(
-                        t ->
-                                t.field("projectKey")
-                                        .value(cond.serviceNode().getProjectKey().value())));
-        bool.must(
-                QueryBuilders.term(
-                        t -> t.field("serviceName").value(cond.serviceNode().getName())));
-        bool.must(QueryBuilders.term(t -> t.field("spanType").value("HTTP")));
-        bool.must(QueryBuilders.term(t -> t.field("kind").value("SERVER")));
+        if (cond.hasServiceName()) {
+            bool.must(QueryBuilders.term(t -> t.field("serviceName").value(cond.serviceName())));
+
+            if (cond.hasEndPointUrl()) {
+                bool.must(nestedHttpUrlTermQuery(cond.endPointUrl()));
+            }
+        }
 
         if (cond.hasTimeRange()) {
             bool.must(
                     QueryBuilders.range(
                             r ->
                                     r.field("startEpochMillis")
-                                            .gte(JsonData.of(cond.getEpochMillisStartTime()))));
-            bool.must(
+                                            .gte(JsonData.of(cond.getEpochMillisStartTime()))),
                     QueryBuilders.range(
                             r ->
                                     r.field("endEpochMillis")
                                             .lte(JsonData.of(cond.getEpochMillisEndTime()))));
         }
+
+        bool.must(
+                QueryBuilders.term(t -> t.field("projectKey").value(cond.projectKey().value())),
+                QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
+                QueryBuilders.term(t -> t.field("kind").value("SERVER")));
 
         return bool.build()._toQuery();
     }
