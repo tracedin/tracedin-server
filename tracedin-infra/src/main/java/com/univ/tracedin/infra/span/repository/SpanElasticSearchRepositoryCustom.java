@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.project.EndTimeBucket;
+import com.univ.tracedin.domain.span.HitMapCondition;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
@@ -22,5 +23,5 @@ public interface SpanElasticSearchRepositoryCustom {
 
     List<SpanDocument> findByTraceId(String traceId);
 
-    List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, String serviceName);
+    List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, HitMapCondition cond);
 }

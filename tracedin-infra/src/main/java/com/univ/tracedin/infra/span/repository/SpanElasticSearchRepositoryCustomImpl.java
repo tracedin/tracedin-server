@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.ResponseTimeBucket;
+import com.univ.tracedin.domain.span.HitMapCondition;
 import com.univ.tracedin.domain.span.SpanKind;
 import com.univ.tracedin.domain.span.SpanType;
 import com.univ.tracedin.domain.span.Trace;
@@ -154,8 +155,8 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
     }
 
     @Override
-    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, String serviceName) {
-        Query query = rootSpanQuery(projectKey, serviceName);
+    public List<EndTimeBucket> getTraceHitMapByProjectKey(String projectKey, HitMapCondition cond) {
+        Query query = rootSpanQuery(projectKey, cond);
         Aggregation aggregation = histogramAggregation();
 
         return executeESQuery(
@@ -247,26 +248,35 @@ public class SpanElasticSearchRepositoryCustomImpl implements SpanElasticSearchR
                                 .aggregations(Map.of("attributes_nested", attributesNestedAgg)));
     }
 
-    private Query rootSpanQuery(String projectKey, String serviceName) {
-        if (StringUtils.isBlank(serviceName)) {
-            return QueryBuilders.bool(
-                    b ->
-                            b.must(
-                                    QueryBuilders.term(
-                                            t -> t.field("projectKey").value(projectKey)),
-                                    QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
-                                    QueryBuilders.term(
-                                            t ->
-                                                    t.field("parentSpanId")
-                                                            .value("0000000000000000"))));
+    private Query rootSpanQuery(String projectKey, HitMapCondition cond) {
+
+        Builder bool = QueryBuilders.bool();
+
+        if (StringUtils.isNotBlank(cond.serviceName())) {
+            bool.must(QueryBuilders.term(t -> t.field("serviceName").value(cond.serviceName())));
+
+            if (StringUtils.isNotBlank(cond.endPointUrl())) {
+                bool.must(nestedHttpUrlTermQuery(cond.endPointUrl()));
+            }
         }
 
-        return QueryBuilders.bool(
-                b ->
-                        b.must(
-                                QueryBuilders.term(t -> t.field("projectKey").value(projectKey)),
-                                QueryBuilders.term(t -> t.field("serviceName").value(serviceName)),
-                                QueryBuilders.term(t -> t.field("spanType").value("HTTP"))));
+        return bool.must(
+                        QueryBuilders.term(t -> t.field("projectKey").value(projectKey)),
+                        QueryBuilders.term(t -> t.field("spanType").value("HTTP")),
+                        QueryBuilders.term(t -> t.field("kind").value("SERVER")))
+                .build()
+                ._toQuery();
+    }
+
+    private Query nestedHttpUrlTermQuery(String endPointUrl) {
+        return QueryBuilders.nested(
+                n ->
+                        n.path("attributes")
+                                .query(
+                                        QueryBuilders.term(
+                                                t ->
+                                                        t.field("attributes.data.http.url.keyword")
+                                                                .value(endPointUrl))));
     }
 
     private List<Trace> extractTraces(CompositeAggregate spansByTrace) {

@@ -35,6 +35,7 @@ public class SpanApi implements SpanApiDocs {
         spanService.publishSpans(request.stream().map(AppendSpanRequest::toSpan).toList());
     }
 
+    // TODO : 엔드포인트 조건 추가
     @GetMapping("/traces")
     public Response<SearchResult<TraceResponse>> searchTraces(
             ReadTraceRequest request, SearchCursor cursor) {

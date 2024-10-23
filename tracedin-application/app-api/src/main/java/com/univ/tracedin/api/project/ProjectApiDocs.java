@@ -5,6 +5,7 @@ import java.util.List;
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.project.dto.AddMemberRequest;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
+import com.univ.tracedin.api.project.dto.HitMapRequest;
 import com.univ.tracedin.api.project.dto.NodeResponse;
 import com.univ.tracedin.api.project.dto.ProjectResponse;
 import com.univ.tracedin.domain.project.EndTimeBucket;
@@ -31,7 +32,7 @@ public interface ProjectApiDocs {
     Response<NetworkTopology> networkTopology(String projectKey);
 
     @Operation(summary = "히트맵 조회", description = "프로젝트의 히트맵을 조회합니다.(5분 별 트레이스의 응답시간 분포)")
-    Response<List<EndTimeBucket>> hitMap(String projectKey, String serviceName);
+    Response<List<EndTimeBucket>> hitMap(String projectKey, HitMapRequest request);
 
     @Operation(summary = "프로젝트 멤버 추가", description = "프로젝트에 멤버를 추가합니다.")
     Response<Void> addMember(Long projectId, AddMemberRequest request);

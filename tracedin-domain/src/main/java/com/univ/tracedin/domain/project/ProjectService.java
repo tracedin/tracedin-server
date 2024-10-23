@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+import com.univ.tracedin.domain.span.HitMapCondition;
 import com.univ.tracedin.domain.user.User;
 import com.univ.tracedin.domain.user.UserId;
 import com.univ.tracedin.domain.user.UserReader;
@@ -42,9 +43,9 @@ public class ProjectService {
         return networkTopologyBuilder.build(project);
     }
 
-    public List<EndTimeBucket> getTraceHitMap(ProjectKey projectKey, String serviceName) {
+    public List<EndTimeBucket> getTraceHitMap(ProjectKey projectKey, HitMapCondition cond) {
         Project project = projectReader.readByKey(projectKey);
-        return hitMapReader.read(project, serviceName);
+        return hitMapReader.read(project, cond);
     }
 
     public void addMember(ProjectId projectId, String targetMemberEmail, MemberRole role) {

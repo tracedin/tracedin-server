@@ -20,7 +20,7 @@ public interface SpanRepository {
 
     List<Span> findByTraceId(TraceId traceId);
 
-    List<EndTimeBucket> getTraceHitMapByProjectKey(ProjectKey projectKey, String serviceName);
+    List<EndTimeBucket> getTraceHitMapByProjectKey(ProjectKey projectKey, HitMapCondition cond);
 
     void save(Span span);
 }

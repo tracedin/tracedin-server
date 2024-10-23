@@ -11,6 +11,7 @@ import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
 import com.univ.tracedin.domain.project.EndTimeBucket;
 import com.univ.tracedin.domain.project.ProjectKey;
+import com.univ.tracedin.domain.span.HitMapCondition;
 import com.univ.tracedin.domain.span.Span;
 import com.univ.tracedin.domain.span.SpanId;
 import com.univ.tracedin.domain.span.SpanKind;
@@ -68,8 +69,7 @@ public class SpanCoreRepository implements SpanRepository {
 
     @Override
     public List<EndTimeBucket> getTraceHitMapByProjectKey(
-            ProjectKey projectKey, String serviceName) {
-        return spanElasticSearchRepository.getTraceHitMapByProjectKey(
-                projectKey.value(), serviceName);
+            ProjectKey projectKey, HitMapCondition cond) {
+        return spanElasticSearchRepository.getTraceHitMapByProjectKey(projectKey.value(), cond);
     }
 }

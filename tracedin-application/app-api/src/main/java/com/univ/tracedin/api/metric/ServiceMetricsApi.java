@@ -41,6 +41,7 @@ public class ServiceMetricsApi implements ServiceMetricsApiDocs {
         serviceMetricService.appendMetrics(requests.toDomain());
     }
 
+    // TODO : 엔드포인트 조건 추가
     @GetMapping("/http-request-count")
     public Response<List<HttpRequestCountResponse>> getHttpRequestCount(Node node) {
         List<HttpRequestCountResponse> responses =

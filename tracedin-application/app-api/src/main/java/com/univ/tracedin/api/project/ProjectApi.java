@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import com.univ.tracedin.api.global.dto.Response;
 import com.univ.tracedin.api.project.dto.AddMemberRequest;
 import com.univ.tracedin.api.project.dto.CreateProjectRequest;
+import com.univ.tracedin.api.project.dto.HitMapRequest;
 import com.univ.tracedin.api.project.dto.NodeResponse;
 import com.univ.tracedin.api.project.dto.ProjectResponse;
 import com.univ.tracedin.domain.project.EndTimeBucket;
@@ -71,11 +71,12 @@ public class ProjectApi implements ProjectApiDocs {
         return Response.success(projectService.getNetworkTopology(ProjectKey.from(projectKey)));
     }
 
+    // TODO : 엔드 포엔트 파라미터 추가
     @GetMapping("/{projectKey}/hit-map")
     public Response<List<EndTimeBucket>> hitMap(
-            @PathVariable String projectKey, @RequestParam(required = false) String serviceName) {
+            @PathVariable String projectKey, HitMapRequest request) {
         return Response.success(
-                projectService.getTraceHitMap(ProjectKey.from(projectKey), serviceName));
+                projectService.getTraceHitMap(ProjectKey.from(projectKey), request.toCondition()));
     }
 
     @PostMapping("/{projectId}/members")
@@ -96,4 +97,6 @@ public class ProjectApi implements ProjectApiDocs {
         projectService.changeRole(ProjectMemberId.from(projectMemberId), targetRole);
         return Response.success();
     }
+
+    // TODO : 상태 코드 분포 조회 API
 }
