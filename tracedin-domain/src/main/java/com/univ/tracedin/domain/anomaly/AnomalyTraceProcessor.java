@@ -39,7 +39,7 @@ public class AnomalyTraceProcessor {
     }
 
     private Alert createAnomalyAlert(AnomalyTrace anomalyTrace) {
-        Project project = projectReader.readByKey(anomalyTrace.projectKey());
+        Project project = projectReader.read(anomalyTrace.projectKey());
         Map<String, String> details = new HashMap<>();
         details.put("traceId", anomalyTrace.traceId().getValue());
         details.put(

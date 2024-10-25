@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
+import com.univ.tracedin.domain.alert.AlertMethod.AlertMethodStatus;
 import com.univ.tracedin.domain.project.ProjectId;
 
 @Component
@@ -31,13 +32,11 @@ public class AlertMethodManager {
         alertMethodRepository.deleteMethod(alertMethod);
     }
 
-    public void deactivate(AlertMethod alertMethod) {
-        alertMethod.deactivate();
-        alertMethodRepository.saveMethod(alertMethod);
-    }
-
-    public void activate(AlertMethod alertMethod) {
-        alertMethod.activate();
+    public void changeStatus(AlertMethod alertMethod, AlertMethodStatus status) {
+        switch (status) {
+            case ACTIVE -> alertMethod.activate();
+            case INACTIVE -> alertMethod.inactivate();
+        }
         alertMethodRepository.saveMethod(alertMethod);
     }
 }

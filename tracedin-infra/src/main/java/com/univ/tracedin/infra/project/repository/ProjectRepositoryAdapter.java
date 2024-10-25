@@ -54,6 +54,15 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
+    public List<Node> findServiceNodeList(ProjectKey projectKey) {
+        List<String> serviceNames =
+                spanElasticSearchRepository.findServiceNames(projectKey.value());
+        return serviceNames.stream()
+                .map(name -> Node.of(projectKey, name, NodeType.SERVICE))
+                .toList();
+    }
+
+    @Override
     public Project findByKey(ProjectKey projectKey) {
         return projectJpaRepository
                 .findByProjectKey(projectKey.value())
@@ -67,22 +76,8 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public List<Node> findServiceNodeList(ProjectKey projectKey) {
-        List<String> serviceNames =
-                spanElasticSearchRepository.findServiceNames(projectKey.value());
-        return serviceNames.stream()
-                .map(name -> Node.of(projectKey, name, NodeType.SERVICE))
-                .toList();
-    }
-
-    @Override
     public ProjectMember saveProjectMember(ProjectMember projectMember) {
         return projectMemberJpaRepository.save(ProjectMemberEntity.from(projectMember)).toDomain();
-    }
-
-    @Override
-    public void deleteProjectMember(ProjectMember projectMember) {
-        projectMemberJpaRepository.delete(ProjectMemberEntity.from(projectMember));
     }
 
     @Override
@@ -91,6 +86,13 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
                 .findById(id.getValue())
                 .map(ProjectMemberEntity::toDomain)
                 .orElseThrow(() -> ProjectMemberNotFoundException.EXCEPTION);
+    }
+
+    @Override
+    public List<ProjectMember> findProjectMembersByProject(Project project) {
+        return projectMemberJpaRepository.findByProjectId(project.getId().getValue()).stream()
+                .map(ProjectMemberEntity::toDomain)
+                .toList();
     }
 
     @Override
@@ -106,9 +108,7 @@ public class ProjectRepositoryAdapter implements ProjectRepository {
     }
 
     @Override
-    public List<ProjectMember> findProjectMembersByProject(Project project) {
-        return projectMemberJpaRepository.findByProjectId(project.getId().getValue()).stream()
-                .map(ProjectMemberEntity::toDomain)
-                .toList();
+    public void deleteProjectMember(ProjectMember projectMember) {
+        projectMemberJpaRepository.delete(ProjectMemberEntity.from(projectMember));
     }
 }

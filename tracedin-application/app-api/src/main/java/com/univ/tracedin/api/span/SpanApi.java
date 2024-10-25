@@ -2,6 +2,7 @@ package com.univ.tracedin.api.span;
 
 import java.util.List;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,7 @@ import com.univ.tracedin.api.span.dto.SpanTreeResponse;
 import com.univ.tracedin.api.span.dto.TraceResponse;
 import com.univ.tracedin.common.dto.SearchCursor;
 import com.univ.tracedin.common.dto.SearchResult;
+import com.univ.tracedin.domain.auth.UserPrincipal;
 import com.univ.tracedin.domain.span.SpanService;
 import com.univ.tracedin.domain.span.TraceId;
 
@@ -37,9 +39,13 @@ public class SpanApi implements SpanApiDocs {
 
     @GetMapping("/traces")
     public Response<SearchResult<TraceResponse>> searchTraces(
-            TraceSearchRequest request, SearchCursor cursor) {
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            TraceSearchRequest request,
+            SearchCursor cursor) {
         SearchResult<TraceResponse> responses =
-                spanService.getTraces(request.toCondition(), cursor).map(TraceResponse::from);
+                spanService
+                        .searchTraces(currentUser.userId(), request.toCondition(), cursor)
+                        .map(TraceResponse::from);
         return Response.success(responses);
     }
 

@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 public class ProjectDeleter {
 
     private final ProjectRepository projectRepository;
+    private final ProjectMemberManager projectMemberManager;
 
-    public void delete(Project project) {
-        projectRepository.delete(project);
+    public void delete(Project targetProject) {
+        projectMemberManager.removeAll(targetProject);
+        projectRepository.delete(targetProject);
     }
 }

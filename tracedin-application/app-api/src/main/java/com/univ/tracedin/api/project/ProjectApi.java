@@ -2,6 +2,7 @@ package com.univ.tracedin.api.project;
 
 import java.util.List;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +20,7 @@ import com.univ.tracedin.api.project.dto.CreateProjectRequest;
 import com.univ.tracedin.api.project.dto.NodeResponse;
 import com.univ.tracedin.api.project.dto.ProjectResponse;
 import com.univ.tracedin.api.project.dto.TraceSearchRequest;
+import com.univ.tracedin.domain.auth.UserPrincipal;
 import com.univ.tracedin.domain.project.NetworkTopology;
 import com.univ.tracedin.domain.project.ProjectId;
 import com.univ.tracedin.domain.project.ProjectKey;
@@ -27,7 +29,6 @@ import com.univ.tracedin.domain.project.ProjectMemberId;
 import com.univ.tracedin.domain.project.ProjectService;
 import com.univ.tracedin.domain.project.ProjectStatistic;
 import com.univ.tracedin.domain.project.ProjectStatistic.StatisticsType;
-import com.univ.tracedin.domain.user.UserId;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,63 +39,87 @@ public class ProjectApi implements ProjectApiDocs {
 
     @PostMapping
     public Response<ProjectKey> createProject(
-            @RequestBody CreateProjectRequest request, Long userId) {
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @RequestBody CreateProjectRequest request) {
         return Response.success(
-                projectService.create(UserId.from(userId), request.toProjectInfo()));
+                projectService.create(currentUser.userId(), request.toProjectInfo()));
+    }
+
+    @PostMapping("/{projectId}/members")
+    public Response<Void> addMember(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @PathVariable Long projectId,
+            AddMemberRequest request) {
+        projectService.addMember(
+                currentUser.userId(),
+                ProjectId.from(projectId),
+                request.targetMemberEmail(),
+                request.role());
+        return Response.success("멤버 추가 완료");
     }
 
     @GetMapping
-    public Response<List<ProjectResponse>> projectList(Long userId) {
+    public Response<List<ProjectResponse>> projectList(
+            @AuthenticationPrincipal UserPrincipal currentUser) {
         List<ProjectResponse> responses =
-                projectService.getProjectList(UserId.from(userId)).stream()
+                projectService.getProjectList(currentUser.userId()).stream()
                         .map(ProjectResponse::from)
                         .toList();
         return Response.success(responses);
     }
 
-    @DeleteMapping("/{projectId}")
-    public Response<Void> deleteProject(@PathVariable Long projectId) {
-        projectService.deleteProject(ProjectId.from(projectId));
-        return Response.success();
-    }
-
     @GetMapping("/{projectKey}/service-nodes")
-    public Response<List<NodeResponse>> serviceNodes(@PathVariable String projectKey) {
+    public Response<List<NodeResponse>> serviceNodes(
+            @AuthenticationPrincipal UserPrincipal currentUser, @PathVariable String projectKey) {
         List<NodeResponse> responses =
-                projectService.getServiceNodeList(ProjectKey.from(projectKey)).stream()
+                projectService
+                        .getServiceNodeList(currentUser.userId(), ProjectKey.from(projectKey))
+                        .stream()
                         .map(NodeResponse::from)
                         .toList();
         return Response.success(responses);
     }
 
     @GetMapping("/{projectKey}/network-topology")
-    public Response<NetworkTopology> networkTopology(@PathVariable String projectKey) {
-        return Response.success(projectService.getNetworkTopology(ProjectKey.from(projectKey)));
+    public Response<NetworkTopology> networkTopology(
+            @AuthenticationPrincipal UserPrincipal currentUser, @PathVariable String projectKey) {
+        return Response.success(
+                projectService.getNetworkTopology(
+                        currentUser.userId(), ProjectKey.from(projectKey)));
     }
 
     @GetMapping("/statistics/{statisticsType}")
     public Response<ProjectStatistic<?>> statistics(
-            @PathVariable StatisticsType statisticsType, TraceSearchRequest request) {
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @PathVariable StatisticsType statisticsType,
+            TraceSearchRequest request) {
         return Response.success(
-                projectService.getStatistics(request.toCondition(), statisticsType));
-    }
-
-    @PostMapping("/{projectId}/members")
-    public Response<Void> addMember(@PathVariable Long projectId, AddMemberRequest request) {
-        projectService.addMember(
-                ProjectId.from(projectId), request.targetMemberEmail(), request.role());
-        return Response.success();
-    }
-
-    @DeleteMapping("/members/{projectMemberId}")
-    public Response<Void> removeMember(@PathVariable Long projectMemberId) {
-        projectService.removeMember(ProjectMemberId.from(projectMemberId));
-        return Response.success();
+                projectService.getStatistics(
+                        currentUser.userId(), request.toCondition(), statisticsType));
     }
 
     @PatchMapping("/members/{projectMemberId}")
-    public Response<Void> changeRole(@PathVariable Long projectMemberId, MemberRole targetRole) {
-        projectService.changeRole(ProjectMemberId.from(projectMemberId), targetRole);
-        return Response.success();
+    public Response<Void> changeRole(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @PathVariable Long projectMemberId,
+            MemberRole targetRole) {
+        projectService.changeRole(
+                currentUser.userId(), ProjectMemberId.from(projectMemberId), targetRole);
+        return Response.success("멤버 권한 변경 완료");
+    }
+
+    @DeleteMapping("/{projectId}")
+    public Response<Void> deleteProject(
+            @AuthenticationPrincipal UserPrincipal currentUser, @PathVariable Long projectId) {
+        projectService.deleteProject(currentUser.userId(), ProjectId.from(projectId));
+        return Response.success("프로젝트 삭제 완료");
+    }
+
+    @DeleteMapping("/members/{projectMemberId}")
+    public Response<Void> removeMember(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            @PathVariable Long projectMemberId) {
+        projectService.removeMember(currentUser.userId(), ProjectMemberId.from(projectMemberId));
+        return Response.success("멤버 삭제 완료");
     }
 }

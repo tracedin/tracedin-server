@@ -24,8 +24,12 @@ public class ProjectMemberManager {
         return projectRepository.findProjectMemberById(id);
     }
 
-    public void remove(ProjectMember projectMember) {
-        projectRepository.deleteProjectMember(projectMember);
+    public List<ProjectMember> readAll(User user) {
+        return projectRepository.findProjectMembersByUser(user);
+    }
+
+    public List<ProjectMember> readAll(Project project) {
+        return projectRepository.findProjectMembersByProject(project);
     }
 
     public void changeRole(ProjectMember projectMember, ProjectMember.MemberRole role) {
@@ -33,12 +37,8 @@ public class ProjectMemberManager {
         projectRepository.saveProjectMember(projectMember);
     }
 
-    public List<ProjectMember> readAll(User user) {
-        return projectRepository.findProjectMembersByUser(user);
-    }
-
-    public List<ProjectMember> readAll(Project project) {
-        return projectRepository.findProjectMembersByProject(project);
+    public void remove(ProjectMember projectMember) {
+        projectRepository.deleteProjectMember(projectMember);
     }
 
     public void removeAll(Project project) {

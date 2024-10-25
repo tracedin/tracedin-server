@@ -18,7 +18,7 @@ public class AlertSender {
                 .readAll(alert.getReceiver().projectId())
                 .forEach(
                         alertMethod -> {
-                            if (alertMethod.isActivated()) {
+                            if (alertMethod.isActivate()) {
                                 AlertClient client =
                                         alertClientFactory.getClient(alertMethod.getAlertType());
                                 client.sendAlert(alertMethod.getContact(), alert);

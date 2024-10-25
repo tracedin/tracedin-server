@@ -37,41 +37,57 @@ public class ProjectService {
         return projectReader.readAll(user);
     }
 
-    public List<Node> getServiceNodeList(ProjectKey projectKey) {
-        Project project = projectReader.readByKey(projectKey);
-        return projectReader.readServiceNods(project);
+    public List<Node> getServiceNodeList(UserId userId, ProjectKey projectKey) {
+        User currentUser = userReader.read(userId);
+        Project targetProject = projectReader.read(projectKey);
+        projectValidator.validate(currentUser, targetProject);
+        return projectReader.readServiceNods(targetProject);
     }
 
-    public NetworkTopology getNetworkTopology(ProjectKey projectKey) {
-        Project project = projectReader.readByKey(projectKey);
-        return networkTopologyBuilder.build(project);
+    public NetworkTopology getNetworkTopology(UserId userId, ProjectKey projectKey) {
+        User currentUser = userReader.read(userId);
+        Project targetProject = projectReader.read(projectKey);
+        projectValidator.validate(currentUser, targetProject);
+        return networkTopologyBuilder.build(targetProject);
     }
 
     public ProjectStatistic<?> getStatistics(
-            TraceSearchCondition cond, StatisticsType statisticsType) {
-        projectValidator.validate(cond.projectKey());
+            UserId userId, TraceSearchCondition cond, StatisticsType statisticsType) {
+        User currentUser = userReader.read(userId);
+        Project targetProject = projectReader.read(cond.projectKey());
+        projectValidator.validate(currentUser, targetProject);
         return projectAnalyzer.analyze(cond, statisticsType);
     }
 
-    public void addMember(ProjectId projectId, String targetMemberEmail, MemberRole role) {
+    public void addMember(
+            UserId userId, ProjectId projectId, String targetMemberEmail, MemberRole role) {
+        User currentUser = userReader.read(userId);
         Project project = projectReader.read(projectId);
         User targetUser = userReader.read(targetMemberEmail);
+        projectValidator.validate(currentUser, project, MemberRole.ADMIN);
         projectMemberManager.add(project, targetUser, role);
     }
 
-    public void removeMember(ProjectMemberId projectMemberId) {
+    public void removeMember(UserId userId, ProjectMemberId projectMemberId) {
+        User currentUser = userReader.read(userId);
         ProjectMember projectMember = projectMemberManager.read(projectMemberId);
+        Project targetProject = projectReader.read(projectMember.getProjectId());
+        projectValidator.validate(currentUser, targetProject, MemberRole.ADMIN);
         projectMemberManager.remove(projectMember);
     }
 
-    public void changeRole(ProjectMemberId projectMemberId, MemberRole role) {
-        ProjectMember projectMember = projectMemberManager.read(projectMemberId);
-        projectMemberManager.changeRole(projectMember, role);
+    public void changeRole(UserId userId, ProjectMemberId projectMemberId, MemberRole role) {
+        User currentUser = userReader.read(userId);
+        ProjectMember targetMember = projectMemberManager.read(projectMemberId);
+        Project targetProject = projectReader.read(targetMember.getProjectId());
+        projectValidator.validate(currentUser, targetProject, MemberRole.ADMIN);
+        projectMemberManager.changeRole(targetMember, role);
     }
 
-    public void deleteProject(ProjectId projectId) {
-        Project project = projectReader.read(projectId);
-        projectMemberManager.removeAll(project);
-        projectDeleter.delete(project);
+    public void deleteProject(UserId userId, ProjectId projectId) {
+        User currentUser = userReader.read(userId);
+        Project targetProject = projectReader.read(projectId);
+        projectValidator.validate(currentUser, targetProject, MemberRole.ADMIN);
+        projectDeleter.delete(targetProject);
     }
 }
