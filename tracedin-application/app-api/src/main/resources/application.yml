@@ -26,6 +26,9 @@ jwt:
     expiration: 25920000
 server:
   port: 8089
+grpc:
+  server:
+    port: 6565
 ---
 spring:
   config:
@@ -34,3 +37,6 @@ spring:
 jwt:
   access-token:
     expiration: 25920000
+grpc:
+  server:
+    port: 6565
